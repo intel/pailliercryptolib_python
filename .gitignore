@@ -1,0 +1,24 @@
+.vscode/
+.vs/
+build*/
+
+.DS_Store
+
+# Generated files
+docs/doxygen/
+*.log
+Doxyfile
+dist/
+
+# Python files
+venv/
+__pycache__/
+.ipynb_checkpoints/
+.mypy_cache/
+.env
+fixedpoint.py
+*.egg-info/
+*.cpython*.so
+
+# vim
+**.swp

@@ -1,0 +1,76 @@
+exclude: 'docs/doxygen/'
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.0.1
+      hooks:
+        - id: trailing-whitespace
+        - id: end-of-file-fixer
+        - id: check-merge-conflict
+        - id: mixed-line-ending
+        - id: check-byte-order-marker
+        - id: check-yaml
+    - repo: https://github.com/crate-ci/typos
+      rev: typos-v0.8.2
+      hooks:
+        - id: typos
+    - repo: https://github.com/ambv/black
+      rev: 21.12b0
+      hooks:
+        - id: black
+          files: \.(py|ipynb)$
+          exclude: __pycache__|build|__init__.py
+          args:
+            - --line-length
+            - '80'
+    - repo: https://gitlab.com/pycqa/flake8
+      rev: 3.9.2
+      hooks:
+        - id: flake8
+          files: \.py$
+          exclude: __pycache__|build|internal_*|__init__.py
+          args:
+            - --max-line-length
+            - '80'
+            - --ignore
+            - E203,W503
+    - repo: local
+      hooks:
+        - id: clang-format-9
+          name: clang-format-9
+          entry: clang-format-9
+          language: system
+          files: \.(c|cc|cxx|cpp|h|hpp|hxx|js|proto)$
+          args:
+            - -i
+        - id: shfmt
+          name: shfmt
+          entry: shfmt
+          language: system
+          files: \.sh$
+          args:
+            - -d
+            - -i
+            - '2'
+            - -ci
+            - -sr
+            - -bn
+            - -w
+        - id: cpplint
+          name: cpplint
+          entry: cpplint
+          language: system
+          files: \.(c|cc|cxx|cpp|h|hpp|hxx)$
+          exclude: paillier/bignum.cpp|paillier/include/bignum.h
+          args:
+            - --recursive
+            - --filter=-runtime/references
+        - id: shellcheck
+          name: shellcheck
+          entry: shellcheck
+          language: system
+          files: \.sh$
+          args:
+            - -s
+            - bash
+            - -e
+            - SC1091
