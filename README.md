@@ -25,12 +25,12 @@ pip install -r requirements.txt
 ## Usage
 At project root, set environment variables as:
 ```bash
-export IPP_PAILLIER_DIR=$(pwd)
-export PYTHONPATH=${IPP_PAILLIER_DIR}/build/python:${PYTHONPATH}
+export IPCL_PYTHON_DIR=$(pwd)
+export PYTHONPATH=${IPCL_PYTHON_DIR}/build/python:${PYTHONPATH}
 ```
 
 Running test script
 ```bash
 cd python
-python ipp_paillier_test.py
+python ipcl_python_test.py
 ```

@@ -24,7 +24,7 @@ class PaillierKeypair(object):
         n_length: int = 1024, enable_DJN: bool = True
     ) -> tuple:
         """
-        Invokes IPP-Paillier keypair generation
+        Invokes IPCL keypair generation
 
         Args:
             n_length: key length to generate public and private key pair.
@@ -53,7 +53,7 @@ class PaillierPublicKey(object):
         PaillierPublicKey constructor
 
         Args:
-            key: py_ipp_paillier.PaillierPublicKey or PaillierPublicKey
+            key: ipcl_bindings.PaillierPublicKey or PaillierPublicKey
             n_length: (default=None) Needed when constructing w/ arbitrary key
         """
         if isinstance(key, ipclPublicKey):
@@ -169,8 +169,8 @@ class PaillierPrivateKey(object):
         PaillierPrivateKey constructor
 
         Args:
-            key: py_ipp_paillier.PaillierPrivateKey or
-                 py_ipp_paillier.PaillierPublicKey with p and q (private keys)
+            key: ipcl_bindings.PaillierPrivateKey or
+                 ipcl_bindings.PaillierPublicKey with p and q (private keys)
         """
         if isinstance(key, ipclPrivateKey):
             self.prikey = key
@@ -285,7 +285,7 @@ class PaillierEncryptedNumber(object):
 
         Args:
             public_key: PaillierPublicKey
-            ciphertext: py_ipp_paillier.PaillierEncryptedNumber
+            ciphertext: ipcl_bindings.PaillierEncryptedNumber
             exponent: exponent of ciphertext
         """
         if not isinstance(ciphertext, ipclEncryptedNumber):
