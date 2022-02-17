@@ -73,5 +73,7 @@ ${IPCL_PYTHON_PYTHON_SRC_DIR}/ipcl_bindings_classes.cpp)
 pybind11_add_module(ipcl_bindings ${IPCL_PYTHON_PYTHON_SRCS})
 
 target_include_directories(ipcl_bindings PUBLIC ${PYTHON_INCLUDE_DIRS} ${IPCL_PYTHON_PYTHON_INC_DIR} ${IPCL_PYTHON_PYTHON_SRC_DIR})
+message(STATUS "ippcrypto_inc_dir: ${IPPCRYTPTO_INC_DIR}")
+target_include_directories(ipcl_bindings PRIVATE ${IPPCRYTPTO_INC_DIR})
 target_link_libraries(ipcl_bindings PUBLIC libipcl OpenSSL::SSL OpenSSL::Crypto)
 target_link_libraries(ipcl_bindings INTERFACE ext_fate_fixedpoint)

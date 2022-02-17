@@ -3,8 +3,8 @@
 include(ExternalProject)
 MESSAGE(STATUS "Configuring Intel Paillier Cryptosystem Library")
 set(IPCL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_ipcl)
-set(IPCL_GIT_REPO_URL git@github.com:intel-sandbox/skmono-ipcl_rc.git)
-set(IPCL_GIT_LABEL master)
+set(IPCL_GIT_REPO_URL git@github.com:intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib.git)
+set(IPCL_GIT_LABEL main)
 set(IPCL_SRC_DIR ${IPCL_PREFIX}/src/ext_ipcl/)
 
 set(IPCL_CXX_FLAGS "${IPCL_PYTHON_FORWARD_CMAKE_ARGS}")

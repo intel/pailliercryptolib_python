@@ -19,6 +19,7 @@ __pycache__/
 fixedpoint.py
 *.egg-info/
 *.cpython*.so
+.eggs/
 
 # vim
 **.swp
