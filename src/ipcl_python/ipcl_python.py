@@ -1,6 +1,5 @@
 # Copyright (C) 2021-2022 Intel Corporation
 
-from __future__ import annotations
 from .fixedpoint import FixedPointNumber
 from .ipcl_bindings import (
     ipclKeypair,
@@ -11,8 +10,7 @@ from .ipcl_bindings import (
 )
 import numpy as np
 import gmpy2
-from typing import Union, Optional
-from numpy import typing as npt
+from typing import Union, Optional, Tuple
 
 
 class PaillierKeypair(object):
@@ -45,7 +43,7 @@ class PaillierKeypair(object):
 class PaillierPublicKey(object):
     def __init__(
         self,
-        key: Union[ipclPublicKey, PaillierPublicKey, int],
+        key: Union[ipclPublicKey, "PaillierPublicKey", int],
         n_length: Optional[int] = None,
         enable_DJN: Optional[bool] = None,
     ):
@@ -101,7 +99,7 @@ class PaillierPublicKey(object):
 
     def encrypt(
         self,
-        value: Union[npt.ArrayLike, int, float],
+        value: Union[np.ndarray, list, int, float],
         apply_obfuscator: bool = True,
     ):
         """
@@ -201,7 +199,7 @@ class PaillierPrivateKey(object):
         self.prikey = state
         self.public_key = PaillierPublicKey(state.public_key)
 
-    def __eq__(self, other: PaillierPrivateKey):
+    def __eq__(self, other: "PaillierPrivateKey"):
         return (self.prikey.p == other.prikey.p) and (
             self.prikey.q == other.prikey.q
         )
@@ -213,7 +211,8 @@ class PaillierPrivateKey(object):
         return self.prikey.__repr__
 
     def decrypt(
-        self, encrypted_number: Union[npt.ArrayLike, PaillierEncryptedNumber]
+        self,
+        encrypted_number: Union[np.ndarray, list, "PaillierEncryptedNumber"],
     ):
         """
         Decrypts single or list/array of PaillierEncryptedNumber
@@ -314,25 +313,25 @@ class PaillierEncryptedNumber(object):
         """
         return self.ippEncryptedNumber.getBN()
 
-    def __add__(self, other) -> PaillierEncryptedNumber:
+    def __add__(self, other) -> "PaillierEncryptedNumber":
         return self.__raw_add(other)
 
-    def __radd__(self, other) -> PaillierEncryptedNumber:
+    def __radd__(self, other) -> "PaillierEncryptedNumber":
         return self.__add__(other)
 
-    def __sub__(self, other) -> PaillierEncryptedNumber:
+    def __sub__(self, other) -> "PaillierEncryptedNumber":
         return self.__raw_add(other * -1)
 
-    def __rsub__(self, other) -> PaillierEncryptedNumber:
+    def __rsub__(self, other) -> "PaillierEncryptedNumber":
         return self.__sub__(other)
 
-    def __rmul__(self, other) -> PaillierEncryptedNumber:
+    def __rmul__(self, other) -> "PaillierEncryptedNumber":
         return self.__mul__(other)
 
-    def __truediv__(self, scalar) -> PaillierEncryptedNumber:
+    def __truediv__(self, scalar) -> "PaillierEncryptedNumber":
         return self.__mul__(1 / scalar)
 
-    def __mul__(self, scalar: Union[float, int]) -> PaillierEncryptedNumber:
+    def __mul__(self, scalar: Union[float, int]) -> "PaillierEncryptedNumber":
         encode = FixedPointNumber.encode(
             scalar, self.public_key.n, self.public_key.max_int
         )
@@ -359,8 +358,8 @@ class PaillierEncryptedNumber(object):
         return PaillierEncryptedNumber(self.public_key, ct, exponent)
 
     def __raw_add(
-        self, other: Union[PaillierEncryptedNumber, int, float]
-    ) -> PaillierEncryptedNumber:
+        self, other: Union["PaillierEncryptedNumber", int, float]
+    ) -> "PaillierEncryptedNumber":
         if isinstance(other, PaillierEncryptedNumber):
             # check key match for ct+ct
             if self.public_key != other.public_key:
@@ -381,7 +380,7 @@ class PaillierEncryptedNumber(object):
                 "PaillierEncryptedNumber type allowed"
             )
 
-    def increase_exponent_to(self, exponent: int) -> PaillierEncryptedNumber:
+    def increase_exponent_to(self, exponent: int) -> "PaillierEncryptedNumber":
         """
         Increases exponent of ciphertext to target exponent
 
@@ -404,8 +403,8 @@ class PaillierEncryptedNumber(object):
         return new_encryptednumber
 
     def __align_exponent(
-        self, x: PaillierEncryptedNumber, y: PaillierEncryptedNumber
-    ) -> tuple[PaillierEncryptedNumber, PaillierEncryptedNumber]:
+        self, x: "PaillierEncryptedNumber", y: "PaillierEncryptedNumber"
+    ) -> Tuple["PaillierEncryptedNumber", "PaillierEncryptedNumber"]:
         """
         Aligns exponent of two PaillierEncryptedNumbers
 

@@ -95,7 +95,7 @@ setup(
     ],
     install_requires=[
         "wheel",
-        "numpy>=1.20.0",
+        "numpy==1.19.1",
         "pycryptodomex>=3.6.6",
         "gmpy2==2.1.0",
         "cachetools>=3.0.0",
