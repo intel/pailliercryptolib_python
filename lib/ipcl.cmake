@@ -29,6 +29,16 @@ ExternalProject_Get_Property(ext_ipcl SOURCE_DIR BINARY_DIR)
 
 add_library(libipcl INTERFACE)
 add_dependencies(libipcl ext_ipcl)
-target_link_libraries(libipcl INTERFACE
+
+file(STRINGS /etc/os-release LINUX_ID REGEX "^ID=")
+string(REGEX REPLACE "ID=\(.*)" "\\1" LINUX_ID "${LINUX_ID}")
+if(${LINUX_ID} STREQUAL "ubuntu")
+  target_link_libraries(libipcl INTERFACE
         ${IPCL_PREFIX}/lib/libipcl.a)
+else()
+  # non debian systems install ipcl under lib64
+  target_link_libraries(libipcl INTERFACE
+  ${IPCL_PREFIX}/lib64/libipcl.a)
+endif()
+
 target_include_directories(libipcl INTERFACE ${IPCL_PREFIX}/include)
