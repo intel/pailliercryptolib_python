@@ -16,5 +16,5 @@ ExternalProject_Add(
 add_custom_command(TARGET ext_fate_fixedpoint PRE_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy
   ${FATE_FIXEDPOINT_PREFIX}/src/fixedpoint.py
-  ${IPCL_PYTHON_PYTHON_SRC_DIR}
+  ${IPCL_BINDINGS_SRC_DIR}
 )

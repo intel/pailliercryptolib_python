@@ -17,8 +17,8 @@
 #include "ipcl/key_pair.hpp"
 #include "ipcl/paillier_ops.hpp"
 
-#ifndef SRC_IPCL_PYTHON_INCLUDE_IPCL_BINDINGS_H_
-#define SRC_IPCL_PYTHON_INCLUDE_IPCL_BINDINGS_H_
+#ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
+#define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
 class py_ipclKeyPair {
  public:
   static pybind11::tuple generate_keypair(int64_t n_length = 1024,
@@ -36,4 +36,4 @@ BigNumber pylist2BN(const pybind11::list& l_bn);
 BigNumber pylist2BN(int length, const pybind11::list& l_bn);
 };  // namespace py_ippUtils
 
-#endif  // SRC_IPCL_PYTHON_INCLUDE_IPCL_BINDINGS_H_
+#endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_

@@ -85,7 +85,7 @@ setup(
     long_description="",
     packages=find_packages("src"),
     package_dir={"": "src"},
-    ext_modules=[CMakeExtension("ipcl_python/ipcl_bindings")],
+    ext_modules=[CMakeExtension("ipcl_python/bindings/ipcl_bindings")],
     cmdclass=dict(build_ext=CMakeBuild),
     test_suite="tests",
     license="Apache-2.0",
