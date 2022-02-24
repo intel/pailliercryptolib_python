@@ -1,3 +1,6 @@
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 wheel
 numpy>=1.20.0
 pycryptodomex>=3.6.6

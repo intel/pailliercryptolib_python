@@ -1,6 +1,6 @@
 # Python bindings and wrapper for Intel Paillier Cryptosystem Library
 [Intel Paillier Cryptosystem Library](https://github.com/intel/pailliercryptolib) is an open-source library which provides accelerated performance of a partial homomorphic encryption (HE), named Paillier cryptosystem, by utilizing Intel® [IPP-Crypto](https://github.com/intel/ipp-crypto) technologies on Intel CPUs supporting the AVX512IFMA instructions. The library is written in modern standard C++ and provides the essential API for the Paillier cryptosystem scheme.
-Intel Paillier Cryptosystem Library - Python is an Python extension module intended for Python based privacy preserving machine learning solutions which utilizes the partial HE scheme for increased protection.
+Intel Paillier Cryptosystem Library - Python is a Python extension package intended for Python based privacy preserving machine learning solutions which utilizes the partial HE scheme for increased data and model protection.
 
 ## Contents
 - [Python bindings and wrapper for Intel Paillier Cryptosystem Library](#python-bindings-and-wrapper-for-intel-paillier-cryptosystem-library)
@@ -14,16 +14,23 @@ Intel Paillier Cryptosystem Library - Python is an Python extension module inten
 - [Contributors](#contributors)
 
 ## Introduction
-adding intro - match front end
+Paillier cryptosystem is a probabilistic asymmetric algorithm for public key cryptography and a partial homomorphic encryption scheme which allows two types of computation:
+- addition of two ciphertexts
+- addition and multiplication of a ciphertext by a plaintext number
+
+As a public key encryption scheme, Paillier cryptosystem has three stages:
+
+ - Generate public-private key pair
+ - Encryption with public key
+ - Decryption with private key
+
+For increased security, typically the key length is at least 1024 bits, but recommendation is 2048 bits or larger. To handle such large size integers, conventional implementations of the Paillier cryptosystem utilizes the GNU Multiple Precision Arithmetic Library (GMP). The essential computation of the scheme relies on the modular exponentiation, and our library takes advantage of the multi-buffer modular exponentiation function (```mbx_exp_mb8```) of IPP-Crypto library, which is enabled in AVX512IFMA instruction sets supporting SKUs, such as Intel Icelake Xeon CPUs.
+
+The Python extension package allows ease of use of the C++ backend library. The extension provides seamless conversion from Python integer and floating point objects, which are theoretically infinite precision limited by memory size, to C++ [BigNumber type](https://www.intel.com/content/www/us/en/develop/documentation/ipp-crypto-reference/top/public-key-cryptography-functions/big-number-arithmetic.html). It also allows easier handling of arrays in ```numpy.ndarray``` or ```list``` format, for encryption, decryption and HE computations.
 
 ## Installing the package
 ### Requirements
-In order to install and use the extension module, the system must support the AVX512IFMA instruction set, which is enabled in Intel Icelake or higher generation CPUs.
-The extension runs on Python3, more specifically:
-```
-python>=3.6.9
-pip>=22.0.1
-```
+In order to install and use the extension package, the system must support the AVX512IFMA instruction set, which is enabled in Intel Icelake or higher generation CPUs and runs on ```Python>=3.6.9```.
 
 ### Dependencies
 Must have dependencies include:
@@ -32,23 +39,18 @@ cmake >=3.15.1
 git
 pthread
 g++ >= 7.0 or clang >= 10.0
+pip>=22.0.1
 ```
-The following libraries are also required,
-```
-nasm>=2.15
-OpenSSL
-```
-which can be installed by:
-```bash
-sudo apt update
-sudo apt install libssl-dev
-```
-For ```nasm```, please refer to the [Netwide Assembler webpage](https://nasm.us/) for installation details.
+For additional dependencies regarding the C++ backend, refer to the [Intel Paillier Cryptosystem Library](https://github.com/intel/pailliercryptolib).
 
 ### Installation
-Compiling and installing the extension can be done by:
+Compiling and installing the package can be done by:
 ```bash
 python setup.py install
+```
+or
+```bash
+pip install .
 ```
 
 To test the installed module,
@@ -108,7 +110,11 @@ print(np.allclose(a * b, de_d))
 
 For more details, please refer to [documentation (TBD)](https://github.com/intel/pailliercryptolib-python).
 
+# Standardization
+This library is in compliance with the homomorphic encryption standards [ISO/IEC 18033-6](https://www.iso.org/standard/67740.html).
+The compliance test is included in the C++ backend [unit-test](https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib/blob/main/test/test_cryptography.cpp#L117-L258).
 # Contributors
 Main contributors to this project, sorted by alphabetical order of last name are:
+  - [Xiaojun Huang](https://github.com/xhuan28)
   - [Sejun Kim](https://github.com/skmono) (lead)
   - [Bin Wang](https://github.com/bwang30)

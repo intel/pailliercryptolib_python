@@ -1,5 +1,8 @@
 #! /usr/bin/env python3
 
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import os
 import re
 import sys

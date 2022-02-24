@@ -1,4 +1,5 @@
 // Copyright (C) 2021-2022 Intel Corporation
+// SPDX-License-Identifier: Apache-2.0
 
 #include <ippcp.h>
 #include <ippcpdefs.h>
