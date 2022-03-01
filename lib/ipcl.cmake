@@ -20,9 +20,9 @@ ExternalProject_Add(
              -DCMAKE_INSTALL_PREFIX=${IPCL_PREFIX}
              -DIPCL_TEST=OFF
              -DIPCL_BENCHMARK=OFF
-             -DIPCL_TEST_OMP=OFF
              -DIPCL_DOCS=OFF
              -DIPCL_SHARED=OFF
+             -DIPCL_ENABLE_OMP=ON
   UPDATE_COMMAND ""
 )
 

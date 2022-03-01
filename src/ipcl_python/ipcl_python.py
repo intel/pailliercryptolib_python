@@ -1,8 +1,8 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from .fixedpoint import FixedPointNumber
-from .ipcl_bindings import (
+from .bindings.fixedpoint import FixedPointNumber
+from .bindings.ipcl_bindings import (
     ipclKeypair,
     ipclPublicKey,
     ipclPrivateKey,
