@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <memory>
+#include <vector>
 
 #include "include/ipcl_bindings.h"
 
@@ -9,53 +10,53 @@ namespace py = pybind11;
 
 void def_ipclPublicKey(py::module& m) {
   // Paillier publickey module
-  py::class_<PaillierPublicKey>(m, "ipclPublicKey")
+  py::class_<ipcl::PaillierPublicKey>(m, "ipclPublicKey")
       .def(py::init([](py::int_ n) {  // deprecated
         std::string n_str = py::str(n);
-        const BigNumber bn(n_str.c_str());
-        PaillierPublicKey* ret = new PaillierPublicKey(bn, 1024);
+        const ipcl::BigNumber bn(n_str.c_str());
+        ipcl::PaillierPublicKey* ret = new ipcl::PaillierPublicKey(bn, 1024);
         return ret;
       }))
       .def(py::init([](py::int_ n, bool enable_DJN) {  // deprecated
         std::string n_str = py::str(n);
-        const BigNumber bn(n_str.c_str());
-        PaillierPublicKey* ret = new PaillierPublicKey(bn, 1024);
+        const ipcl::BigNumber bn(n_str.c_str());
+        ipcl::PaillierPublicKey* ret = new ipcl::PaillierPublicKey(bn, 1024);
         if (enable_DJN) ret->enableDJN();
         return ret;
       }))
-      .def(py::init([](const BigNumber& n) {
-        PaillierPublicKey* ret = new PaillierPublicKey(n, 1024);
+      .def(py::init([](const ipcl::BigNumber& n) {
+        ipcl::PaillierPublicKey* ret = new ipcl::PaillierPublicKey(n, 1024);
         return ret;
       }))
-      .def(py::init([](const BigNumber& n, bool enable_DJN) {
-        PaillierPublicKey* ret = new PaillierPublicKey(n, 1024);
+      .def(py::init([](const ipcl::BigNumber& n, bool enable_DJN) {
+        ipcl::PaillierPublicKey* ret = new ipcl::PaillierPublicKey(n, 1024);
         if (enable_DJN) ret->enableDJN();
         return ret;
       }))
       .def(py::init([](py::int_ n, int bits) {  // deprecated
         std::string n_str = py::str(n);
-        const BigNumber bn(n_str.c_str());
-        PaillierPublicKey* ret = new PaillierPublicKey(bn, bits);
+        const ipcl::BigNumber bn(n_str.c_str());
+        ipcl::PaillierPublicKey* ret = new ipcl::PaillierPublicKey(bn, bits);
         return ret;
       }))
       .def(py::init([](py::int_ n, int bits, bool enable_DJN) {  // deprecated
         std::string n_str = py::str(n);
-        const BigNumber bn(n_str.c_str());
-        PaillierPublicKey* ret = new PaillierPublicKey(bn, bits);
+        const ipcl::BigNumber bn(n_str.c_str());
+        ipcl::PaillierPublicKey* ret = new ipcl::PaillierPublicKey(bn, bits);
         if (enable_DJN) ret->enableDJN();
         return ret;
       }))
-      .def(py::init([](const BigNumber& n, int bits) {
-        PaillierPublicKey* ret = new PaillierPublicKey(n, bits);
+      .def(py::init([](const ipcl::BigNumber& n, int bits) {
+        ipcl::PaillierPublicKey* ret = new ipcl::PaillierPublicKey(n, bits);
         return ret;
       }))
-      .def(py::init([](const BigNumber& n, int bits, bool enable_DJN) {
-        PaillierPublicKey* ret = new PaillierPublicKey(n, bits);
+      .def(py::init([](const ipcl::BigNumber& n, int bits, bool enable_DJN) {
+        ipcl::PaillierPublicKey* ret = new ipcl::PaillierPublicKey(n, bits);
         if (enable_DJN) ret->enableDJN();
         return ret;
       }))
       .def("__repr__",
-           [](const PaillierPublicKey& self) {
+           [](const ipcl::PaillierPublicKey& self) {
              std::stringstream ss;
              ss << self.addr;
              std::size_t hashcode = std::hash<std::string>{}(ss.str());
@@ -63,21 +64,23 @@ void def_ipclPublicKey(py::module& m) {
                                 std::to_string(hashcode).substr(0, 10) + ">");
            })
       .def("__eq__",
-           [](const PaillierPublicKey& self, const PaillierPublicKey& other) {
+           [](const ipcl::PaillierPublicKey& self,
+              const ipcl::PaillierPublicKey& other) {
              return self.getN() == other.getN();
            })
       .def("__hash__",
-           [](const PaillierPublicKey& self) {
+           [](const ipcl::PaillierPublicKey& self) {
              std::stringstream ss;
              ss << self.getN();
              std::size_t hashcode = std::hash<std::string>{}(ss.str());
              return hashcode;
            })
-      .def_property_readonly("n", &PaillierPublicKey::getN)
-      .def_property_readonly("length", &PaillierPublicKey::getBits)
-      .def_property_readonly("nsquare", &PaillierPublicKey::getNSQ)
+      .def_property_readonly("n", &ipcl::PaillierPublicKey::getN)
+      .def_property_readonly("length", &ipcl::PaillierPublicKey::getBits)
+      .def_property_readonly("nsquare", &ipcl::PaillierPublicKey::getNSQ)
       .def("raw_encrypt",
-           [](PaillierPublicKey& self, BigNumber& bn, bool make_secure) {
+           [](ipcl::PaillierPublicKey& self, ipcl::BigNumber& bn,
+              bool make_secure) {
              BigNumber pt[8];
              pt[0] = bn;
 

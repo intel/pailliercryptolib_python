@@ -78,7 +78,7 @@ unsigned int getdec(const std::string& baseSet, const std::string& val) {
   return res;
 }
 
-std::string BN2dec(const BigNumber& bn) {
+std::string BN2dec(const ipcl::BigNumber& bn) {
   std::string s_hex;
   bn.num2hex(s_hex);
   size_t start = s_hex.find_first_not_of(" \n\r\t\f\b");

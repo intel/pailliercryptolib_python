@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 Intel Corporation
+// Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include <ipcl/bignum.h>
@@ -18,7 +18,7 @@ const char hexSet[] = "0123456789abcdef";
 
 std::string getbase(const std::string& baseSet, unsigned int val);
 unsigned int getdec(const std::string& baseSet, const std::string& val);
-std::string BN2dec(const BigNumber& bn);
+std::string BN2dec(const ipcl::BigNumber& bn);
 };  // namespace baseconverter
 
 #endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_H_
