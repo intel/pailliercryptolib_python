@@ -32,7 +32,7 @@ void def_ipclEncryptedNumber(pybind11::module&);
 void def_BigNumber(pybind11::module&);
 
 namespace py_ippUtils {
-std::pair<int, pybind11::list> BN2pylist(const BigNumber& bn);
+std::pair<int, pybind11::list> BN2pylist(const ipcl::BigNumber& bn);
 ipcl::BigNumber pylist2BN(const pybind11::list& l_bn);
 ipcl::BigNumber pylist2BN(int length, const pybind11::list& l_bn);
 };  // namespace py_ippUtils

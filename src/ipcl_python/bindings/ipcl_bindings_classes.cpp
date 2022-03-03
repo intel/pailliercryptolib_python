@@ -81,23 +81,23 @@ void def_ipclPublicKey(py::module& m) {
       .def("raw_encrypt",
            [](ipcl::PaillierPublicKey& self, ipcl::BigNumber& bn,
               bool make_secure) {
-             BigNumber pt[8];
+             std::vector<ipcl::BigNumber> pt(8), ct(8);
              pt[0] = bn;
 
-             BigNumber ct[8];
              self.encrypt(ct, pt);
              return ct[0];
            })
       .def("raw_encrypt_buff8",  // 8 pack encryption with list input
-           [](PaillierPublicKey& self, py::list value, bool make_secure) {
+           [](ipcl::PaillierPublicKey& self, py::list value, bool make_secure) {
              size_t length = value.size();
              if (length > 8)
                throw std::out_of_range("Value size is larger than 8");
-             BigNumber pData[8];
+             std::vector<ipcl::BigNumber> pData(8);
              for (int i = 0; i < length; i++)
-               pData[i] = value[i].cast<BigNumber>();
+               pData[i] = value[i].cast<ipcl::BigNumber>();
 
-             BigNumber ct[8];  // = std::make_unique<BigNumber>(8);
+             std::vector<ipcl::BigNumber> ct(
+                 8);  // = std::make_unique<BigNumber>(8);
              self.encrypt(ct, pData, make_secure);
              py::list l_ct;
              for (int i = 0; i < length; i++) l_ct.append(ct[i]);
@@ -105,17 +105,18 @@ void def_ipclPublicKey(py::module& m) {
            })
       .def(
           "raw_encrypt_buff8",  // overloaded 8 pack encryption with numpy array
-          [](PaillierPublicKey& self, py::array value, bool make_secure) {
+          [](ipcl::PaillierPublicKey& self, py::array value, bool make_secure) {
             py::buffer_info buffer_info = value.request();
             size_t length = buffer_info.shape[0];
             if (length > 8)
               throw std::out_of_range("Value size is larger than 8");
-            BigNumber* data = static_cast<BigNumber*>(buffer_info.ptr);
+            ipcl::BigNumber* data =
+                static_cast<ipcl::BigNumber*>(buffer_info.ptr);
 
-            BigNumber pData[8];
+            std::vector<ipcl::BigNumber> pData(8);
             for (int i = 0; i < length; i++) pData[i] = data[i];
 
-            BigNumber ct[8];
+            std::vector<ipcl::BigNumber> ct(8);
             self.encrypt(ct, pData, make_secure);
             py::list l_ct;
             for (int i = 0; i < length; i++) l_ct.append(ct[i]);
@@ -123,82 +124,85 @@ void def_ipclPublicKey(py::module& m) {
           })
       .def("raw_encrypt_insecure",  // encrypt bn insecure, for plaintext
                                     // add/mul
-           [](PaillierPublicKey& self, BigNumber& bn) {
-             BigNumber ct;
+           [](ipcl::PaillierPublicKey& self, ipcl::BigNumber& bn) {
+             ipcl::BigNumber ct;
              self.encrypt(ct, bn);
              return ct;
            })
       .def("encrypt",
-           [](PaillierPublicKey& self, BigNumber& val, bool make_secure) {
-             BigNumber pt[8];
+           [](ipcl::PaillierPublicKey& self, ipcl::BigNumber& val,
+              bool make_secure) {
+             std::vector<ipcl::BigNumber> pt(8);
              pt[0] = val;
 
-             BigNumber ct[8];
+             std::vector<ipcl::BigNumber> ct(8);
              self.encrypt(ct, pt, make_secure);
-             PaillierEncryptedNumber ret(&self, ct[0]);
+             ipcl::PaillierEncryptedNumber ret(&self, ct[0]);
              return ret;
            })
       .def("encrypt_buff8",  // encrypt 8 pack list to single
                              // PaillierEncryptedNumber
-           [](PaillierPublicKey& self, py::list value, bool make_secure) {
+           [](ipcl::PaillierPublicKey& self, py::list value, bool make_secure) {
              size_t length = value.size();
              if (length > 8)
                throw std::out_of_range("List size is larger than 8");
-             BigNumber pData[8];
+             std::vector<ipcl::BigNumber> pData(8);
              for (int i = 0; i < length; i++) {
-               pData[i] = value[i].cast<BigNumber>();
+               pData[i] = value[i].cast<ipcl::BigNumber>();
              }
-             BigNumber ct[8];
+             std::vector<ipcl::BigNumber> ct(8);
              self.encrypt(ct, pData, make_secure);
 
-             PaillierEncryptedNumber ret(&self, ct, length);
+             ipcl::PaillierEncryptedNumber ret(&self, ct, length);
              return ret;
            })
-      .def("encrypt_buff8",  // encrypt 8 pack array to single
-                             // PaillierEncryptedNumber
-           [](PaillierPublicKey& self, py::array value, bool make_secure) {
-             py::buffer_info buffer_info = value.request();
-             size_t length = buffer_info.shape[0];
-             if (length > 8)
-               throw std::out_of_range("Array size is larger than 8");
-             py::int_* data = static_cast<py::int_*>(buffer_info.ptr);
+      .def(
+          "encrypt_buff8",  // encrypt 8 pack array to single
+                            // PaillierEncryptedNumber
+          [](ipcl::PaillierPublicKey& self, py::array value, bool make_secure) {
+            py::buffer_info buffer_info = value.request();
+            size_t length = buffer_info.shape[0];
+            if (length > 8)
+              throw std::out_of_range("Array size is larger than 8");
+            ipcl::BigNumber* data =
+                static_cast<ipcl::BigNumber*>(buffer_info.ptr);
 
-             BigNumber pData[8];
-             for (int i = 0; i < 8; i++) {
-               std::string s_val = py::str(data[i]);
-               pData[i] = i < length ? BigNumber(s_val.c_str()) : 0;
-             }
-             BigNumber ct[8];
-             self.encrypt(ct, pData, make_secure);
+            std::vector<ipcl::BigNumber> pData(8);
+            for (int i = 0; i < length; i++) {
+              pData[i] = data[i];
+            }
+            std::vector<ipcl::BigNumber> ct(8);
+            self.encrypt(ct, pData, make_secure);
 
-             PaillierEncryptedNumber ret(&self, ct, length);
-             return ret;
-           })
+            ipcl::PaillierEncryptedNumber ret(&self, ct, length);
+            return ret;
+          })
       .def(py::pickle(
-          [](const PaillierPublicKey& self) {  // __getstate__
-            BigNumber bn = self.getN();
+          [](const ipcl::PaillierPublicKey& self) {  // __getstate__
+            ipcl::BigNumber bn = self.getN();
             auto lbn = py_ippUtils::BN2pylist(bn);
             int bits = self.getBits();
             return py::make_tuple(lbn.second, bits);
           },
           [](py::tuple t) {  // __setstate__
             py::list l_bn = t[0];
-            BigNumber n = py_ippUtils::pylist2BN(l_bn);
+            ipcl::BigNumber n = py_ippUtils::pylist2BN(l_bn);
             int n_length = py::cast<int>(t[1]);
-            PaillierPublicKey* pk = new PaillierPublicKey(n, n_length);
+            ipcl::PaillierPublicKey* pk =
+                new ipcl::PaillierPublicKey(n, n_length);
             return pk;
           }));
 }
 
 void def_ipclPrivateKey(py::module& m) {
-  py::class_<PaillierPrivateKey>(m, "ipclPrivateKey")
-      .def(py::init([](PaillierPublicKey* pubkey, const BigNumber& p,
-                       const BigNumber& q) {
-        return std::unique_ptr<PaillierPrivateKey>(
-            new PaillierPrivateKey(pubkey, p, q));
+  py::class_<ipcl::PaillierPrivateKey>(m, "ipclPrivateKey")
+      .def(py::init([](ipcl::PaillierPublicKey* pubkey,
+                       const ipcl::BigNumber& p, const ipcl::BigNumber& q) {
+        return std::unique_ptr<ipcl::PaillierPrivateKey>(
+            new ipcl::PaillierPrivateKey(pubkey, p, q));
       }))
       .def("__repr__",
-           [](const PaillierPrivateKey& self) {
+           [](const ipcl::PaillierPrivateKey& self) {
              std::stringstream ss;
              ss << self.addr;
              std::size_t hashcode = std::hash<std::string>{}(ss.str());
@@ -206,33 +210,34 @@ void def_ipclPrivateKey(py::module& m) {
                                 std::to_string(hashcode).substr(0, 10) + ">");
            })
       .def("__eq__",
-           [](const PaillierPrivateKey& self, const PaillierPrivateKey& other) {
+           [](const ipcl::PaillierPrivateKey& self,
+              const ipcl::PaillierPrivateKey& other) {
              return self.getQ() == other.getQ();
            })
       .def("__hash__",
-           [](const PaillierPrivateKey& self) {
+           [](const ipcl::PaillierPrivateKey& self) {
              std::stringstream ss;
              ss << self.addr;
              std::size_t hashcode = std::hash<std::string>{}(ss.str());
              return hashcode;
            })
-      .def_property_readonly("public_key", &PaillierPrivateKey::getPubKey)
-      .def_property_readonly("p", &PaillierPrivateKey::getP)
-      .def_property_readonly("q", &PaillierPrivateKey::getQ)
+      .def_property_readonly("public_key", &ipcl::PaillierPrivateKey::getPubKey)
+      .def_property_readonly("p", &ipcl::PaillierPrivateKey::getP)
+      .def_property_readonly("q", &ipcl::PaillierPrivateKey::getQ)
       .def("decrypt",
-           [](PaillierPrivateKey& self, const PaillierEncryptedNumber& value) {
-             BigNumber tmp[8];
+           [](ipcl::PaillierPrivateKey& self,
+              const ipcl::PaillierEncryptedNumber& value) {
+             std::vector<ipcl::BigNumber> tmp(8);
              tmp[0] = value.getBN();
-             BigNumber dt[8];
+             std::vector<ipcl::BigNumber> dt(8);
              self.decrypt(dt, tmp);
              return dt[0];
            })
       .def("decrypt",  //  decrypt packed PaillierEncryptedNumber
-           [](PaillierPrivateKey& self, const PaillierEncryptedNumber& value,
-              int sz) {
-             BigNumber this_bn[8];
-             value.getArrayBN(this_bn);
-             BigNumber pt[8];
+           [](ipcl::PaillierPrivateKey& self,
+              const ipcl::PaillierEncryptedNumber& value, int sz) {
+             std::vector<ipcl::BigNumber> this_bn = value.getArrayBN();
+             std::vector<ipcl::BigNumber> pt(8);
              self.decrypt(pt, this_bn);
              py::list l_pt;
              for (int i = 0; i < sz; ++i) {
@@ -241,14 +246,14 @@ void def_ipclPrivateKey(py::module& m) {
              return l_pt;
            })
       .def("decrypt_buff8",  // decrypt PaillierEncryptedNumber
-           [](PaillierPrivateKey& self, const py::list& value) {
+           [](ipcl::PaillierPrivateKey& self, const py::list& value) {
              size_t length = value.size();
              if (length > 8)
                throw std::out_of_range("Value size is larger than 8");
-             BigNumber tmp[8];
+             std::vector<ipcl::BigNumber> tmp(8);
              for (int i = 0; i < length; i++)
-               tmp[i] = value[i].cast<PaillierEncryptedNumber>().getBN();
-             BigNumber dt[8];
+               tmp[i] = value[i].cast<ipcl::PaillierEncryptedNumber>().getBN();
+             std::vector<ipcl::BigNumber> dt(8);
              self.decrypt(dt, tmp);
 
              py::list l_dt;
@@ -256,44 +261,44 @@ void def_ipclPrivateKey(py::module& m) {
              return l_dt;
            })
       .def("decrypt_buff8",
-           [](PaillierPrivateKey& self, const py::array& value) {
+           [](ipcl::PaillierPrivateKey& self, const py::array& value) {
              py::buffer_info buffer_info = value.request();
              size_t length = buffer_info.shape[0];
              if (length > 8)
                throw std::out_of_range("Value size is larger than 8");
-             PaillierEncryptedNumber* data =
-                 static_cast<PaillierEncryptedNumber*>(buffer_info.ptr);
-             BigNumber tmp[8];
+             ipcl::PaillierEncryptedNumber* data =
+                 static_cast<ipcl::PaillierEncryptedNumber*>(buffer_info.ptr);
+             std::vector<ipcl::BigNumber> tmp(8);
              for (int i = 0; i < length; i++) tmp[i] = data[i].getBN();
-             BigNumber dt[8];
+             std::vector<ipcl::BigNumber> dt(8);
              self.decrypt(dt, tmp);
              py::list l_dt;
              for (int i = 0; i < length; i++) l_dt.append(dt[i]);
              return l_dt;
            })
       .def("raw_decrypt",  // decrypt BigNumber
-           [](PaillierPrivateKey& self, const BigNumber& value) {
-             BigNumber tmp[8];
+           [](ipcl::PaillierPrivateKey& self, const ipcl::BigNumber& value) {
+             std::vector<ipcl::BigNumber> tmp(8);
              tmp[0] = value;
-             BigNumber dt[8];
+             std::vector<ipcl::BigNumber> dt(8);
              self.decrypt(dt, tmp);
              return dt[0];
            })
       .def("raw_decrypt_buff8",  // decrypt list of BigNumbers
-           [](PaillierPrivateKey& self, const py::list& value) {
+           [](ipcl::PaillierPrivateKey& self, const py::list& value) {
              size_t length = value.size();
              if (length > 8)
                throw std::out_of_range("Value size is larger than 8");
-             BigNumber tmp[8];
+             std::vector<ipcl::BigNumber> tmp(8);
              try {
                for (int i = 0; i < length; i++) {
-                 tmp[i] = value[i].cast<BigNumber>();
+                 tmp[i] = value[i].cast<ipcl::BigNumber>();
                }
              } catch (int e) {
                throw std::invalid_argument("Value is not list of BigNumber");
              }
 
-             BigNumber dt[8];
+             std::vector<ipcl::BigNumber> dt(8);
              self.decrypt(dt, tmp);
              py::list l_dt;
              for (int i = 0; i < length; i++) l_dt.append(dt[i]);
@@ -301,71 +306,73 @@ void def_ipclPrivateKey(py::module& m) {
            })
       .def(
           "raw_decrypt_buff8",  // decrypt array of BigNumbers
-          [](PaillierPrivateKey& self, const py::array& value) {
+          [](ipcl::PaillierPrivateKey& self, const py::array& value) {
             py::buffer_info buffer_info = value.request();
             size_t length = buffer_info.shape[0];
             if (length > 8)
               throw std::out_of_range("Value size is larger than 8");
-            BigNumber tmp[8];
+            std::vector<ipcl::BigNumber> tmp(8);
             try {
-              BigNumber* data = static_cast<BigNumber*>(buffer_info.ptr);
+              ipcl::BigNumber* data =
+                  static_cast<ipcl::BigNumber*>(buffer_info.ptr);
               for (int i = 0; i < length; i++) tmp[i] = data[i];
             } catch (int e) {
               throw std::invalid_argument("Value is not an array of BigNumber");
             }
 
-            BigNumber dt[8];
+            std::vector<ipcl::BigNumber> dt(8);
             self.decrypt(dt, tmp);
             py::list l_dt;
             for (int i = 0; i < length; i++) l_dt.append(dt[i]);
             return l_dt;
           })
       .def(py::pickle(
-          [](const PaillierPrivateKey& self) {  // __getstate__
-            PaillierPublicKey* pub = self.getPubKey();
-            BigNumber pubkeyN = pub->getN();
+          [](const ipcl::PaillierPrivateKey& self) {  // __getstate__
+            const ipcl::PaillierPublicKey* pub = self.getPubKey();
+            ipcl::BigNumber pubkeyN = pub->getN();
             auto _pubkeyN = py_ippUtils::BN2pylist(pubkeyN);
             int bits = pub->getBits();
 
-            BigNumber p = self.getP();
+            ipcl::BigNumber p = self.getP();
             auto _p = py_ippUtils::BN2pylist(p);
-            BigNumber q = self.getQ();
+            ipcl::BigNumber q = self.getQ();
             auto _q = py_ippUtils::BN2pylist(q);
 
             return py::make_tuple(_pubkeyN.second, bits, _p.second, _q.second);
           },
           [](py::tuple t) {  // __setstate__
             py::list l_pubkeyN = t[0];
-            BigNumber pubkeyN = py_ippUtils::pylist2BN(l_pubkeyN);
+            ipcl::BigNumber pubkeyN = py_ippUtils::pylist2BN(l_pubkeyN);
             int bits = py::cast<int>(t[1]);
-            PaillierPublicKey* pub = new PaillierPublicKey(pubkeyN, bits);
+            ipcl::PaillierPublicKey* pub =
+                new ipcl::PaillierPublicKey(pubkeyN, bits);
 
             py::list l_p = t[2];
-            BigNumber p = py_ippUtils::pylist2BN(l_p);
+            ipcl::BigNumber p = py_ippUtils::pylist2BN(l_p);
             py::list l_q = t[3];
-            BigNumber q = py_ippUtils::pylist2BN(l_q);
-            PaillierPrivateKey* pk = new PaillierPrivateKey(pub, p, q);
+            ipcl::BigNumber q = py_ippUtils::pylist2BN(l_q);
+            ipcl::PaillierPrivateKey* pk =
+                new ipcl::PaillierPrivateKey(pub, p, q);
             return pk;
           }));
 }
 
 void def_ipclEncryptedNumber(py::module& m) {
   // PaillierEncryptedNumber
-  py::class_<PaillierEncryptedNumber>(m, "ipclEncryptedNumber")
-      .def(py::init<PaillierPublicKey*, const BigNumber>())
-      .def(py::init<PaillierPublicKey*, const BigNumber*>())
-      .def(py::init<PaillierPublicKey*, const uint32_t*>())
-      .def(py::init([](PaillierPublicKey* pubkey, const py::list vals) {
+  py::class_<ipcl::PaillierEncryptedNumber>(m, "ipclEncryptedNumber")
+      .def(py::init<ipcl::PaillierPublicKey*, const ipcl::BigNumber>())
+      .def(py::init<ipcl::PaillierPublicKey*, const uint32_t*>())
+      .def(py::init([](ipcl::PaillierPublicKey* pubkey, const py::list vals) {
         size_t length = vals.size();
         if (length > 8) throw std::out_of_range("List size is larger than 8");
-        BigNumber pData[8];
+        std::vector<ipcl::BigNumber> pData(8);
         for (int i = 0; i < length; i++) {
-          pData[i] = vals[i].cast<BigNumber>();
+          pData[i] = vals[i].cast<ipcl::BigNumber>();
         }
-        return PaillierEncryptedNumber(pubkey, pData);
+        return ipcl::PaillierEncryptedNumber(pubkey, pData);
       }))
       .def("__repr__",
-           [](const PaillierEncryptedNumber& self) {
+           [](const ipcl::PaillierEncryptedNumber& self) {
              std::stringstream ss;
              ss << self.addr;
              std::size_t hashcode = std::hash<std::string>{}(ss.str());
@@ -373,38 +380,37 @@ void def_ipclEncryptedNumber(py::module& m) {
                                 std::to_string(hashcode).substr(0, 10) + ">");
            })
       .def("__str__",
-           [](const PaillierEncryptedNumber& self) {
+           [](const ipcl::PaillierEncryptedNumber& self) {
              std::stringstream ss;
              ss << self.addr;
              std::size_t hashcode = std::hash<std::string>{}(ss.str());
              return std::string("<ipclEncryptedNumber " +
                                 std::to_string(hashcode).substr(0, 10) + ">");
            })
-      .def("public_key", &PaillierEncryptedNumber::getPK)
+      .def("public_key", &ipcl::PaillierEncryptedNumber::getPK)
       .def("__add__",
-           [](PaillierEncryptedNumber const& self,
-              PaillierEncryptedNumber const& other) { return self + other; })
-      .def("__mul__",
-           [](PaillierEncryptedNumber const& self,
-              PaillierEncryptedNumber const& other) { return self * other; })
-      .def("__mul__",
-           [](PaillierEncryptedNumber const& self, py::int_ other) {
-             std::string s_obj = py::str(other);
-             BigNumber tmp(s_obj.c_str());
-             return self * tmp;
+           [](ipcl::PaillierEncryptedNumber const& self,
+              ipcl::PaillierEncryptedNumber const& other) {
+             return self + other;
            })
-      .def("__mul__", [](PaillierEncryptedNumber const& self,
-                         BigNumber& other) { return self * other; })
-      .def("rotate", &PaillierEncryptedNumber::rotate)
-      .def("isSingle", &PaillierEncryptedNumber::isSingle)
-      .def("__len__", &PaillierEncryptedNumber::getLength)
-      .def("getBN", &PaillierEncryptedNumber::getBN)
+      .def("__mul__",
+           [](ipcl::PaillierEncryptedNumber const& self,
+              ipcl::PaillierEncryptedNumber const& other) {
+             return self * other;
+           })
+      .def("__mul__", [](ipcl::PaillierEncryptedNumber const& self,
+                         ipcl::BigNumber& other) { return self * other; })
+      .def("rotate", &ipcl::PaillierEncryptedNumber::rotate)
+      .def("isSingle", &ipcl::PaillierEncryptedNumber::isSingle)
+      .def("__len__", &ipcl::PaillierEncryptedNumber::getLength)
+      .def("getBN", &ipcl::PaillierEncryptedNumber::getBN)
       .def("getBN",
-           [](PaillierEncryptedNumber const& self) { return self.getBN(); })
+           [](ipcl::PaillierEncryptedNumber const& self) {
+             return self.getBN();
+           })
       .def("getAllBN",
-           [](PaillierEncryptedNumber const& self) {
-             BigNumber bn[8];
-             self.getArrayBN(bn);
+           [](ipcl::PaillierEncryptedNumber const& self) {
+             std::vector<ipcl::BigNumber> bn = self.getArrayBN();
              py::list l_bn;
              if (self.isSingle()) {
                l_bn.append(bn[0]);
@@ -414,14 +420,13 @@ void def_ipclEncryptedNumber(py::module& m) {
              return l_bn;
            })
       .def(py::pickle(
-          [](const PaillierEncryptedNumber& self) {  // __getstate__
-            PaillierPublicKey pub = self.getPK();
+          [](const ipcl::PaillierEncryptedNumber& self) {  // __getstate__
+            ipcl::PaillierPublicKey pub = self.getPK();
             auto lpubn = py_ippUtils::BN2pylist(pub.getN());
 
             int bits = pub.getBits();
 
-            BigNumber bn[8];
-            self.getArrayBN(bn);
+            std::vector<ipcl::BigNumber> bn = self.getArrayBN();
             size_t length = self.getLength();
 
             py::list l_bn;
@@ -434,49 +439,53 @@ void def_ipclEncryptedNumber(py::module& m) {
           },
           [](py::tuple t) {  // __setstate__
             py::list l_pubn = t[0];
-            BigNumber pubn = py_ippUtils::pylist2BN(l_pubn);
+            ipcl::BigNumber pubn = py_ippUtils::pylist2BN(l_pubn);
             int bits = py::cast<int>(t[1]);
-            PaillierPublicKey* pub = new PaillierPublicKey(pubn, bits);
+            ipcl::PaillierPublicKey* pub =
+                new ipcl::PaillierPublicKey(pubn, bits);
 
             int length = py::cast<int>(t[2]);
             py::list l_bn = t[3];
             if (length == 1) {
               py::list lbn = l_bn[0];
-              BigNumber bn = py_ippUtils::pylist2BN(lbn);
-              return std::make_unique<PaillierEncryptedNumber>(pub, bn);
+              ipcl::BigNumber bn = py_ippUtils::pylist2BN(lbn);
+              return std::make_unique<ipcl::PaillierEncryptedNumber>(pub, bn);
             }
 
-            BigNumber bn[8];
+            std::vector<ipcl::BigNumber> bn(8);
             for (size_t i = 0; i < length; ++i) {
               py::list lbn = l_bn[i];
               bn[i] = py_ippUtils::pylist2BN(lbn);
             }
-            return std::make_unique<PaillierEncryptedNumber>(pub, bn);
+            return std::make_unique<ipcl::PaillierEncryptedNumber>(pub, bn);
           }));
 }
 
 void def_BigNumber(py::module& m) {
-  py::class_<BigNumber>(m, "ipclBigNumber")
-      .def(py::init<BigNumber&>())
-      .def(py::init(
-          [](unsigned int obj) { return std::make_unique<BigNumber>(obj); }))
+  py::class_<ipcl::BigNumber>(m, "ipclBigNumber")
+      .def(py::init<ipcl::BigNumber&>())
+      .def(py::init([](unsigned int obj) {
+        return std::make_unique<ipcl::BigNumber>(obj);
+      }))
       .def(py::init([](py::list data) {
         size_t length = data.size();
         unsigned int* pData = new unsigned int[length];
         for (int i = 0; i < length; i++) {
           pData[i] = data[i].cast<unsigned int>();
         }
-        return std::unique_ptr<BigNumber>(new BigNumber(pData, length));
+        return std::unique_ptr<ipcl::BigNumber>(
+            new ipcl::BigNumber(pData, length));
       }))
       .def(py::init([](py::array_t<unsigned int> data) {
         py::buffer_info buffer_info = data.request();
 
         unsigned int* pData = static_cast<unsigned int*>(buffer_info.ptr);
         std::vector<ssize_t> shape = buffer_info.shape;
-        return std::unique_ptr<BigNumber>(new BigNumber(pData, shape[0]));
+        return std::unique_ptr<ipcl::BigNumber>(
+            new ipcl::BigNumber(pData, shape[0]));
       }))
       .def("__repr__",
-           [](BigNumber const& self) {
+           [](ipcl::BigNumber const& self) {
              std::stringstream ss_hash;
              ss_hash << self.addr;
              std::size_t hashcode = std::hash<std::string>{}(ss_hash.str());
@@ -486,97 +495,97 @@ void def_BigNumber(py::module& m) {
                                 " val: " + s_dec + ">");
            })
       .def("__str__",
-           [](BigNumber const& self) {
+           [](ipcl::BigNumber const& self) {
              std::string s_dec = baseconverter::BN2dec(self);
              return s_dec;
            })
       .def("__getitem__",
-           [](BigNumber const& self, unsigned int n) {
+           [](ipcl::BigNumber const& self, unsigned int n) {
              int bnBitLen;
              Ipp32u* bnData;
              ippsRef_BN(nullptr, &bnBitLen, &bnData, self);
-             int length = BITSIZE_WORD(bnBitLen);
+             int length = ipcl::BITSIZE_WORD(bnBitLen);
              if (n >= length)
                throw std::out_of_range("Index is larger than size: " +
                                        std::to_string(length));
              return bnData[n];
            })
-      .def("__eq__", [](BigNumber const& self,
-                        BigNumber const& other) { return self == other; })
-      .def("__ne__", [](BigNumber const& self,
-                        BigNumber const& other) { return self != other; })
-      .def("__add__", [](BigNumber const& self,
-                         BigNumber const& other) { return self + other; })
-      .def("__sub__", [](BigNumber const& self,
-                         BigNumber const& other) { return self - other; })
+      .def("__eq__", [](ipcl::BigNumber const& self,
+                        ipcl::BigNumber const& other) { return self == other; })
+      .def("__ne__", [](ipcl::BigNumber const& self,
+                        ipcl::BigNumber const& other) { return self != other; })
+      .def("__add__", [](ipcl::BigNumber const& self,
+                         ipcl::BigNumber const& other) { return self + other; })
+      .def("__sub__", [](ipcl::BigNumber const& self,
+                         ipcl::BigNumber const& other) { return self - other; })
       .def("__iadd__",
-           [](BigNumber& self, BigNumber const& other) {
+           [](ipcl::BigNumber& self, ipcl::BigNumber const& other) {
              self += other;
              return self;
            })
-      .def("__lt__", [](BigNumber const& self,
-                        BigNumber const& other) { return self < other; })
-      .def("__le__", [](BigNumber const& self,
-                        BigNumber const& other) { return self <= other; })
-      .def("__gt__", [](BigNumber const& self,
-                        BigNumber const& other) { return self > other; })
-      .def("__ge__", [](BigNumber const& self,
-                        BigNumber const& other) { return self >= other; })
-      .def("DwordSize", &BigNumber::DwordSize)
-      .def("BitSize", &BigNumber::BitSize)
+      .def("__lt__", [](ipcl::BigNumber const& self,
+                        ipcl::BigNumber const& other) { return self < other; })
+      .def("__le__", [](ipcl::BigNumber const& self,
+                        ipcl::BigNumber const& other) { return self <= other; })
+      .def("__gt__", [](ipcl::BigNumber const& self,
+                        ipcl::BigNumber const& other) { return self > other; })
+      .def("__ge__", [](ipcl::BigNumber const& self,
+                        ipcl::BigNumber const& other) { return self >= other; })
+      .def("DwordSize", &ipcl::BigNumber::DwordSize)
+      .def("BitSize", &ipcl::BigNumber::BitSize)
       .def("data",
-           [](BigNumber const& self) {
+           [](ipcl::BigNumber const& self) {
              int bnBitLen;
              Ipp32u* bnData;
              ippsRef_BN(nullptr, &bnBitLen, &bnData, self);
-             int length = BITSIZE_WORD(bnBitLen);
+             int length = ipcl::BITSIZE_WORD(bnBitLen);
              py::list l_dt;
              for (int i = 0; i < length; i++) l_dt.append(bnData[i]);
              return py::make_tuple(length, l_dt);
            })
       .def_property_readonly_static(
-          "Zero", [](const py::object&) { return BigNumber::Zero(); })
+          "Zero", [](const py::object&) { return ipcl::BigNumber::Zero(); })
       .def_property_readonly_static(
-          "One", [](const py::object&) { return BigNumber::One(); })
+          "One", [](const py::object&) { return ipcl::BigNumber::One(); })
       .def_property_readonly_static(
-          "Two", [](const py::object&) { return BigNumber::Two(); })
+          "Two", [](const py::object&) { return ipcl::BigNumber::Two(); })
       .def_property_readonly("tolist",
-                             [](BigNumber const& self) {
+                             [](ipcl::BigNumber const& self) {
                                int bnBitLen;
                                Ipp32u* bnData;
                                ippsRef_BN(nullptr, &bnBitLen, &bnData, self);
-                               int length = BITSIZE_WORD(bnBitLen);
+                               int length = ipcl::BITSIZE_WORD(bnBitLen);
                                py::list l_dt;
                                for (int i = 0; i < length; i++)
                                  l_dt.append(bnData[i]);
                                return l_dt;
                              })
       .def_property_readonly("val_alt",
-                             [](BigNumber const& self) {
+                             [](ipcl::BigNumber const& self) {
                                std::string s_dec = baseconverter::BN2dec(self);
                                py::int_ dec = py::cast(s_dec);
                                return dec;
                              })
       .def_property_readonly("val",
-                             [](BigNumber const& self) {
+                             [](ipcl::BigNumber const& self) {
                                int bnBitLen;
                                Ipp32u* bnData;
                                ippsRef_BN(nullptr, &bnBitLen, &bnData, self);
-                               int length = BITSIZE_WORD(bnBitLen);
+                               int length = ipcl::BITSIZE_WORD(bnBitLen);
                                py::list l_dt;
                                for (int i = 0; i < length; i++)
                                  l_dt.append(bnData[i]);
                                return l_dt;
                              })
       .def_property_readonly("shape",
-                             [](BigNumber const& self) {
+                             [](ipcl::BigNumber const& self) {
                                int bnBitLen;
                                ippsRef_BN(nullptr, &bnBitLen, nullptr, self);
-                               int len = BITSIZE_WORD(bnBitLen);
+                               int len = ipcl::BITSIZE_WORD(bnBitLen);
                                return len;
                              })
       .def(py::pickle(
-          [](const BigNumber& self) {  // __getstate__
+          [](const ipcl::BigNumber& self) {  // __getstate__
             auto btl = py_ippUtils::BN2pylist(self);
             return py::make_tuple(btl.first, btl.second);
           },
@@ -586,6 +595,7 @@ void def_BigNumber(py::module& m) {
             Ipp32u* bnData = new Ipp32u[length];
             for (int i = 0; i < length; ++i)
               bnData[i] = py::cast<unsigned int>(l_dt[i]);
-            return std::unique_ptr<BigNumber>(new BigNumber(bnData, length));
+            return std::unique_ptr<ipcl::BigNumber>(
+                new ipcl::BigNumber(bnData, length));
           }));
 }
