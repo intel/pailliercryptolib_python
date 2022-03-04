@@ -84,7 +84,7 @@ class PaillierPublicKey(object):
         self.n, self.max_int, self.nsquare, self.pubkey = state
 
     def __repr__(self):
-        return self.pubkey.__repr__
+        return self.pubkey.__repr__()
 
     def __str__(self):
         return self.pubkey.n
@@ -93,7 +93,7 @@ class PaillierPublicKey(object):
         return self.n == other.n
 
     def __hash__(self):
-        return self.pubkey.__hash__
+        return self.pubkey.__hash__()
 
     def apply_obfuscator(self):
         pass
@@ -206,10 +206,10 @@ class PaillierPrivateKey(object):
         )
 
     def __hash__(self):
-        return self.prikey.__hash__
+        return self.prikey.__hash__()
 
     def __repr__(self):
-        return self.prikey.__repr__
+        return self.prikey.__repr__()
 
     def decrypt(
         self,
@@ -295,6 +295,9 @@ class PaillierEncryptedNumber(object):
         self.public_key = public_key
         self.ippEncryptedNumber = ciphertext
         self.__ciphertext = self.ippEncryptedNumber.getBN()
+
+    def __repr__(self):
+        return self.ippEncryptedNumber.__repr__()
 
     def __getstate__(self):
         return (self.public_key, self.exponent, self.__ciphertext)
