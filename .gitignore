@@ -7,10 +7,15 @@ build*/
 
 .DS_Store
 
-# Generated files
+# Doxygen files
 docs/doxygen/
-*.log
 Doxyfile
+
+# Sphinx files
+_build/
+
+# Generated files
+*.log
 dist/
 
 # Python files
