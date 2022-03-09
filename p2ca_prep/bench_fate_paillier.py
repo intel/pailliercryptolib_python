@@ -1,5 +1,6 @@
 import numpy as np
-from ipcl_python import PaillierKeypair
+
+from federatedml.secureprotol.fate_paillier import PaillierKeypair
 import google_benchmark as benchmark
 
 
@@ -20,7 +21,8 @@ def BM_Encrypt(state):
     pk, _ = PaillierKeypair.generate_keypair(2048)
     x = np.arange(state.range(0))
     while state:
-        _ = pk.encrypt(x)
+        for i in x:
+            _ = pk.encrypt(i)
 
 
 @benchmark.register
@@ -30,9 +32,10 @@ def BM_Encrypt(state):
 def BM_Decrypt(state):
     pk, sk = PaillierKeypair.generate_keypair(2048)
     x = np.arange(state.range(0))
-    ct_x = pk.encrypt(x)
+    ct_x = np.array([pk.encrypt(i) for i in x])
     while state:
-        _ = sk.decrypt(ct_x)
+        for i in ct_x:
+            _ = sk.decrypt(i)
 
 
 @benchmark.register
@@ -42,7 +45,7 @@ def BM_Decrypt(state):
 def BM_Add_CTCT(state):
     pk, _ = PaillierKeypair.generate_keypair(2048)
     x = np.arange(state.range(0))
-    ct_x = pk.encrypt(x)
+    ct_x = np.array([pk.encrypt(i) for i in x])
     ct_y = ct_x
     while state:
         _ = ct_x + ct_y
@@ -55,7 +58,7 @@ def BM_Add_CTCT(state):
 def BM_Add_CTPT(state):
     pk, _ = PaillierKeypair.generate_keypair(2048)
     x = np.arange(state.range(0))
-    ct_x = pk.encrypt(x)
+    ct_x = np.array([pk.encrypt(i) for i in x])
     while state:
         _ = ct_x + x
 
@@ -67,7 +70,7 @@ def BM_Add_CTPT(state):
 def BM_Mul_CTPT(state):
     pk, _ = PaillierKeypair.generate_keypair(2048)
     x = np.arange(state.range(0))
-    ct_x = pk.encrypt(x)
+    ct_x = np.array([pk.encrypt(i) for i in x])
     while state:
         _ = ct_x * x
 
