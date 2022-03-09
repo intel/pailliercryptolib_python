@@ -7,7 +7,7 @@ Intel Paillier Cryptosystem Library - Python is a Python extension package inten
   - [Contents](#content)
   - [Introduction](#introduction)
   - [Installing the package](#installing-the-package)
-    - [Requirements](#dependencies)
+    - [Prerequisites](#prerequisites)
     - [Dependencies](#dependencies)
     - [Installation](#installation)
   - [Usage](#usage)
@@ -29,8 +29,20 @@ For increased security, typically the key length is at least 1024 bits, but reco
 The Python extension package allows ease of use of the C++ backend library. The extension provides seamless conversion from Python integer and floating point objects, which are theoretically infinite precision limited by memory size, to C++ [BigNumber type](https://www.intel.com/content/www/us/en/develop/documentation/ipp-crypto-reference/top/public-key-cryptography-functions/big-number-arithmetic.html). It also allows easier handling of arrays in ```numpy.ndarray``` or ```list``` format, for encryption, decryption and HE computations.
 
 ## Installing the package
-### Requirements
-In order to install and use the extension package, the system must support the AVX512IFMA instruction set, which is enabled in Intel Icelake or higher generation CPUs and runs on ```Python>=3.6.9```.
+### Prerequisites
+For best performance, especially due to the multi-buffer modular exponentiation function, the Python extension is to be used on AVX512IFMA enabled systems, as listed below in Intel CPU codenames:
+- Intel Cannon Lake
+- Intel Ice Lake
+
+The extension module can be used without AVX512IFMA - if the instruction set is not detected on the system, it will automatically switch to non multi-buffer modular exponentiation.
+
+The following operating systems have been tested and deemed to be fully functional.
+
+- Ubuntu 18.04 and higher
+- Red Hat Enterprise Linux 8.1 and higher
+
+We will keep working on adding more supported operating systems.
+
 
 ### Dependencies
 Must have dependencies include:
@@ -39,9 +51,10 @@ cmake >=3.15.1
 git
 pthread
 g++ >= 7.0 or clang >= 10.0
+python >= 3.6.9
 pip>=22.0.1
 ```
-For additional dependencies regarding the C++ backend, refer to the [Intel Paillier Cryptosystem Library](https://github.com/intel/pailliercryptolib).
+For additional dependencies regarding the C++ backend, refer to the [Intel Paillier Cryptosystem Library](https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib).
 
 ### Installation
 Compiling and installing the package can be done by:
