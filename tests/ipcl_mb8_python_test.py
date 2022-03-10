@@ -3,7 +3,7 @@
 
 import numpy as np
 import unittest
-from ipcl_python.ipcl_python import PaillierKeypair
+from ipcl_python.ipcl_mb8_python import PaillierKeypair
 import time
 
 

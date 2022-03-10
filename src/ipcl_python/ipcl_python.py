@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2022 Intel Corporation
+# Copyright (C) 2021 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 from .bindings.fixedpoint import FixedPointNumber
@@ -21,7 +21,7 @@ class PaillierKeypair(object):
     @staticmethod
     def generate_keypair(
         n_length: int = 1024, enable_DJN: bool = True
-    ) -> tuple:
+    ) -> Tuple["PaillierPublicKey", "PaillierPrivateKey"]:
         """
         Invokes IPCL keypair generation
 
