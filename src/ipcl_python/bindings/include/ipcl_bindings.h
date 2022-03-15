@@ -15,8 +15,8 @@
 #include <utility>
 
 #include "include/baseconverter.h"
-#include "ipcl/paillier_keygen.hpp"
-#include "ipcl/paillier_ops.hpp"
+#include "ipcl/keygen.hpp"
+#include "ipcl/ops.hpp"
 
 #ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
 #define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_

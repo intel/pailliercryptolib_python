@@ -1,9 +1,9 @@
 // Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#include <ipcl/bignum.h>
-
 #include <string>
+
+#include "ipcl/bignum.h"
 
 #ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_H_
 #define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_H_
