@@ -47,6 +47,7 @@ class CMakeBuild(build_ext):
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
             "-DPYTHON_EXECUTABLE=" + sys.executable,
+            "-DIPCL_PYTHON_ENABLE_OMP=OFF",
         ]
 
         cfg = "Debug" if self.debug else "Release"
@@ -80,7 +81,7 @@ class CMakeBuild(build_ext):
 
 
 setup(
-    name="Intel Paillier Cryptosystem Library",
+    name="ipcl-python",
     version="1.0",
     author="Sejun Kim",
     author_email="sejun.kim@intel.com",
@@ -98,10 +99,10 @@ setup(
     ],
     install_requires=[
         "wheel",
-        "numpy==1.19.5",
-        "pycryptodomex>=3.6.6",
-        "gmpy2>=2.1.0",
-        "cachetools>=3.0.0",
+        "numpy==1.18.4",
+        "pycryptodomex==3.6.6",
+        "gmpy2==2.0.8",
+        "cachetools==3.0.0",
         "ruamel.yaml==0.16.10",
     ],
     zip_safe=False,

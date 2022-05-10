@@ -39,11 +39,13 @@ set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
 #---------------------------------------------------
 option(IPCL_PYTHON_TEST "Enable testing" ON)
 option(IPCL_PYTHON_DOCS "Enable document building" OFF)
+option(IPCL_PYTHON_ENABLE_OMP " Use OpenMP for IPCL backend" OFF)
 
 message(STATUS "CMAKE_BUILD_TYPE:           ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_C_COMPILER:           ${CMAKE_C_COMPILER}")
-message(STATUS "IPCL_PYTHON_TEST:          ${IPCL_PYTHON_TEST}")
-message(STATUS "IPCL_PYTHON_DOCS:          ${IPCL_PYTHON_DOCS}")
+message(STATUS "IPCL_PYTHON_TEST:           ${IPCL_PYTHON_TEST}")
+message(STATUS "IPCL_PYTHON_DOCS:           ${IPCL_PYTHON_DOCS}")
+message(STATUS "IPCL_PYTHON_ENABLE_OMP:     ${IPCL_PYTHON_ENABLE_OMP}")
 
 set(IPCL_PYTHON_FORWARD_CMAKE_ARGS
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -63,7 +65,7 @@ set(IPCL_BINDINGS_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})
 message(STATUS "IPCL_BINDINGS_SRCS_DIR : ${IPCL_BINDINGS_SRC_DIR}")
 include(lib/ipcl.cmake)
 include(lib/pybind11.cmake)
-include(lib/fate_fixedpoint.cmake)
+
 FetchContent_GetProperties(pybind11)
 
 find_package(OpenSSL REQUIRED)
@@ -76,4 +78,8 @@ pybind11_add_module(ipcl_bindings ${IPCL_BINDINGS_SRCS})
 
 target_include_directories(ipcl_bindings PUBLIC ${PYTHON_INCLUDE_DIRS} ${IPCL_BINDINGS_INC_DIR} ${IPCL_BINDINGS_SRC_DIR})
 target_link_libraries(ipcl_bindings PUBLIC libipcl OpenSSL::SSL OpenSSL::Crypto)
+if(IPCL_PYTHON_ENABLE_OMP)
+  find_package(OpenMP REQUIRED)
+  target_link_libraries(ipcl_bindings PUBLIC OpenMP::OpenMP_CXX)
+endif()
 target_link_libraries(ipcl_bindings INTERFACE ext_fate_fixedpoint)

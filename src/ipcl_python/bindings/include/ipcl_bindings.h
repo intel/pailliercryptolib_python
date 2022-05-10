@@ -15,8 +15,9 @@
 #include <utility>
 
 #include "include/baseconverter.h"
+#include "ipcl/ciphertext.hpp"
 #include "ipcl/keygen.hpp"
-#include "ipcl/ops.hpp"
+#include "ipcl/plaintext.hpp"
 
 #ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
 #define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
@@ -28,13 +29,16 @@ class py_ipclKeyPair {
 
 void def_ipclPublicKey(pybind11::module&);
 void def_ipclPrivateKey(pybind11::module&);
-void def_ipclEncryptedNumber(pybind11::module&);
 void def_BigNumber(pybind11::module&);
+void def_ipclPlainText(pybind11::module&);
+void def_ipclCipherText(pybind11::module&);
 
-namespace py_ippUtils {
-std::pair<int, pybind11::list> BN2pylist(const ipcl::BigNumber& bn);
-ipcl::BigNumber pylist2BN(const pybind11::list& l_bn);
-ipcl::BigNumber pylist2BN(int length, const pybind11::list& l_bn);
-};  // namespace py_ippUtils
+namespace ipclPythonUtils {
+std::pair<int, pybind11::list> BN2pylist(const BigNumber& bn);
+BigNumber pylist2BN(const pybind11::list& l_bn);
+BigNumber pylist2BN(int length, const pybind11::list& l_bn);
+pybind11::tuple getTupleIpclPubKey(const ipcl::PublicKey* pk);
+ipcl::PublicKey* setIpclPubKey(const pybind11::tuple& t_pk);
+};  // namespace ipclPythonUtils
 
 #endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_

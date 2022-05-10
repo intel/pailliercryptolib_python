@@ -24,7 +24,6 @@ __pycache__/
 .ipynb_checkpoints/
 .mypy_cache/
 .env
-**/fixedpoint.py
 *.egg-info/
 *.cpython*.so
 .eggs/

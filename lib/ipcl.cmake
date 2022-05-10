@@ -22,7 +22,7 @@ ExternalProject_Add(
              -DIPCL_BENCHMARK=OFF
              -DIPCL_DOCS=OFF
              -DIPCL_SHARED=OFF
-             -DIPCL_ENABLE_OMP=ON
+             -DIPCL_ENABLE_OMP=${IPCL_PYTHON_ENABLE_OMP}
   UPDATE_COMMAND ""
 )
 

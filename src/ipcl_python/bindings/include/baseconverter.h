@@ -18,7 +18,7 @@ const char hexSet[] = "0123456789abcdef";
 
 std::string getbase(const std::string& baseSet, unsigned int val);
 unsigned int getdec(const std::string& baseSet, const std::string& val);
-std::string BN2dec(const ipcl::BigNumber& bn);
+std::string BN2dec(const BigNumber& bn);
 };  // namespace baseconverter
 
 #endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_H_
