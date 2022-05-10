@@ -47,7 +47,7 @@ class CMakeBuild(build_ext):
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
             "-DPYTHON_EXECUTABLE=" + sys.executable,
-            "-DIPCL_PYTHON_ENABLE_OMP=OFF",
+            "-DIPCL_PYTHON_ENABLE_OMP=ON",
         ]
 
         cfg = "Debug" if self.debug else "Release"
@@ -82,7 +82,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="ipcl-python",
-    version="1.0",
+    version="1.1",
     author="Sejun Kim",
     author_email="sejun.kim@intel.com",
     description="Python wrapper for Intel Paillier Cryptosystem Library",

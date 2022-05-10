@@ -39,7 +39,15 @@ set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
 #---------------------------------------------------
 option(IPCL_PYTHON_TEST "Enable testing" ON)
 option(IPCL_PYTHON_DOCS "Enable document building" OFF)
-option(IPCL_PYTHON_ENABLE_OMP " Use OpenMP for IPCL backend" OFF)
+option(IPCL_PYTHON_ENABLE_OMP "Use OpenMP for IPCL backend" OFF)
+if(IPCL_PYTHON_ENABLE_OMP)
+  find_package(OpenMP)
+  if(NOT OpenMP)
+    option(IPCL_PYTHON_ENABLE_OMP "Use OpenMP for IPCL backend" OFF)
+    message(STATUS "OpenMP not found - disabling for build")
+  endif()
+endif()
+
 
 message(STATUS "CMAKE_BUILD_TYPE:           ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_C_COMPILER:           ${CMAKE_C_COMPILER}")
