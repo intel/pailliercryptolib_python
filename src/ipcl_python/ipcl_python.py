@@ -72,7 +72,7 @@ class PaillierPublicKey(object):
             )
         else:
             raise ValueError(
-                "PubKey should be either key value (n),"
+                "PaillierPublicKey: PubKey should be either key value (n),"
                 "PaillierPublicKey or IPP-PaillierPublicKey object"
             )
         self.max_int = self.n // 3 - 1
@@ -366,10 +366,9 @@ class PaillierEncryptedNumber(object):
             )
             pt = encode.encoding
             pt_exponent = encode.exponent
-            print(other, pt)
             if pt < 0 or pt >= self.public_key.n:
                 raise ValueError(
-                    "PaillierEncryptedNumber__mul__:"
+                    "PaillierEncryptedNumber.__mul__:"
                     " Scalar out of bounds: %i" % pt
                 )
             if pt >= self.public_key.n - self.public_key.max_int:
