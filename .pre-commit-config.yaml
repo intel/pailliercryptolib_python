@@ -21,7 +21,7 @@ repos:
       hooks:
         - id: black
           files: \.(py|ipynb)$
-          exclude: __pycache__|build|__init__.py|fixedpoint.py
+          exclude: __pycache__|build|__init__.py|fixedpoint.py|dev_*.py
           args:
             - --line-length
             - '80'
@@ -30,7 +30,7 @@ repos:
       hooks:
         - id: flake8
           files: \.py$
-          exclude: __pycache__|build|internal_*|__init__.py|fixedpoint.py
+          exclude: __pycache__|build|__init__.py|fixedpoint.py|dev_*.py
           args:
             - --max-line-length
             - '80'

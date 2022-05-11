@@ -4,6 +4,7 @@
 .vscode/
 .vs/
 build*/
+dev_*.py
 
 .DS_Store
 
