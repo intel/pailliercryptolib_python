@@ -122,7 +122,8 @@ class PaillierPublicKey(object):
         for val in value:
             if not (isinstance(val, (int, float, np.integer))):
                 raise ValueError(
-                    "encrypt: input value(s) should be integer or float"
+                    "PaillierPublicKey.encrypt: input value(s) should be"
+                    " integer or float"
                 )
             encoding = FixedPointNumber.encode(val, self.n, self.max_int)
             enc.append(BNUtils.int2BN(encoding.encoding))
@@ -168,7 +169,8 @@ class PaillierPrivateKey(object):
             self.public_key = key
         else:
             raise KeyError(
-                "key should be either Private key or Public key (with p and q)"
+                "PaillierPrivateKey: key should be either Private key or"
+                " Public key (with p and q)"
             )
 
     def __getstate__(self):
@@ -203,7 +205,7 @@ class PaillierPrivateKey(object):
             array or single integer of decrypted encrypted number
         """
         if encrypted_number.public_key != self.public_key:
-            raise ValueError("decrypt: Public key mismatch")
+            raise ValueError("PailierPrivateKey.decrypt: Public key mismatch")
 
         decrypted = self.prikey.decrypt(encrypted_number.ciphertext())
         l_pt, l_expo = decrypted.getTexts(), encrypted_number.exponent()
@@ -469,11 +471,13 @@ class PaillierEncryptedNumber(object):
             other = self.public_key.encrypt(other, apply_obfuscator=False)
         elif isinstance(other, PaillierEncryptedNumber):
             if self.public_key != other.public_key:
-                raise ValueError("__raw_add: PublicKey mismatch")
+                raise ValueError(
+                    "PaillierEncryptedNumber.__raw_add: PublicKey mismatch"
+                )
             if self.__length != len(other) and len(other) > 1:
                 raise ValueError(
-                    "__raw_add: CipherText size mismatch"
-                    " with PaillierEncryptedNumber"
+                    "PaillierEncryptedNumber.__raw_add: CipherText size"
+                    " mismatch with PaillierEncryptedNumber"
                 )
 
         # align self vs other (scalar)
@@ -693,7 +697,10 @@ class PaillierEncryptedNumber(object):
 
     def dot(self, other: Union[np.ndarray, list]) -> "PaillierEncryptedNumber":
         if len(other) != self.__len__():
-            raise ValueError("dot: input size mismatch with ciphertext")
+            raise ValueError(
+                "PaillierEncryptedNumber.dot: input size mismatch"
+                " with ciphertext"
+            )
 
         elemul = self.__mul__(other)
         return elemul.sum()

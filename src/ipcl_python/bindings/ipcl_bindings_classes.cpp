@@ -436,6 +436,10 @@ void def_BigNumber(py::module& m) {
              self += other;
              return self;
            })
+      .def("__mul__", [](BigNumber const& self,
+                         BigNumber const& other) { return self * other; })
+      .def("__mul__",
+           [](BigNumber const& self, Ipp32u other) { return self * other; })
       .def("__lt__", [](BigNumber const& self,
                         BigNumber const& other) { return self < other; })
       .def("__le__", [](BigNumber const& self,
