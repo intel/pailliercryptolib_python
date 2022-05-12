@@ -458,8 +458,8 @@ class PaillierEncryptedNumber(object):
         if isinstance(other, np.ndarray) or isinstance(other, list):
             if self.__length != len(other):
                 raise ValueError(
-                    "__raw_add: array(list) size mismatch"
-                    " with PaillierEncryptedNumber"
+                    "PaillierEncryptedNumber.__raw_add: array(list) size"
+                    " mismatch with PaillierEncryptedNumber"
                 )
             other = self.public_key.encrypt(other, apply_obfuscator=False)
         # PlainText scalar - broadcasting
