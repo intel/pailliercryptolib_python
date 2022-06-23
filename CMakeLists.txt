@@ -33,7 +33,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(CMAKE_C_FLAGS "-O2")
-set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
+set(CMAKE_CXX_FLAGS "-O2 -fpermissive -Wno-as-needed")
 
 
 #---------------------------------------------------
@@ -85,7 +85,7 @@ ${IPCL_BINDINGS_SRC_DIR}/ipcl_bindings_classes.cpp)
 pybind11_add_module(ipcl_bindings ${IPCL_BINDINGS_SRCS})
 
 target_include_directories(ipcl_bindings PUBLIC ${PYTHON_INCLUDE_DIRS} ${IPCL_BINDINGS_INC_DIR} ${IPCL_BINDINGS_SRC_DIR})
-target_link_libraries(ipcl_bindings PUBLIC libipcl OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(ipcl_bindings PUBLIC libipcl OpenSSL::SSL OpenSSL::Crypto -lnuma)
 if(IPCL_PYTHON_ENABLE_OMP)
   find_package(OpenMP REQUIRED)
   target_link_libraries(ipcl_bindings PUBLIC OpenMP::OpenMP_CXX)

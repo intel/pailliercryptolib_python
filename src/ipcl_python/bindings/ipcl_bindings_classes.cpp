@@ -321,6 +321,7 @@ void def_ipclCipherText(py::module& m) {
       .def("__mul__", [](const ipcl::CipherText& self,
                          const ipcl::PlainText& other) { return self * other; })
       .def("__len__", &ipcl::CipherText::getSize)
+      .def("getCipherText", &ipcl::CipherText::getCipherText)
       .def("rotate", &ipcl::CipherText::rotate,
            "Rotate ipclCipherText container")
       .def(

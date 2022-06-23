@@ -99,6 +99,10 @@ class PaillierPublicKey(object):
     def apply_obfuscator(self):
         pass
 
+    def raw_encrypt(self, plaintext: int) -> "ipclBigNumber":
+        ct = self.pubkey.encrypt(plaintext, False)
+        return ct
+
     def encrypt(
         self,
         value: Union[np.ndarray, list, int, float],
@@ -191,6 +195,18 @@ class PaillierPrivateKey(object):
     def __repr__(self):
         return self.prikey.__repr__()
 
+    def raw_decrypt(
+        self, ciphertext: Union[int, "ipclBigNumber"]
+    ) -> "ipclBigNumber":
+        if isinstance(ciphertext, int):
+            tempCT = ipclCipherText(
+                self.prikey.public_key, BNUtils.int2BN(ciphertext)
+            )
+            return self.prikey.decrypt(tempCT)[0]
+
+        tempCT = ipclCipherText(self.prikey.public_key, ciphertext)
+        return self.prikey.decrypt(tempCT)[0]
+
     def decrypt(
         self,
         encrypted_number: "PaillierEncryptedNumber",
@@ -276,7 +292,7 @@ class PaillierEncryptedNumber(object):
     def ciphertextBN(self, idx: Optional[int] = None):
         """
         Getter function for obfuscated ciphertext
-        Args:
+        Args:=
             idx: index in the ciphertext array. If None, returns
                  list of entire ciphertexts
         Returns:
@@ -308,6 +324,39 @@ class PaillierEncryptedNumber(object):
             raise IndexError("exponent: idx out of range")
 
         return self.__exponents[idx]
+
+    def __getitem__(self, key: Union[int, slice]) -> "PaillierEncryptedNumber":
+        if isinstance(key, slice):
+            if (
+                key.stop >= len(self)
+                or key.stop < 0
+                or key.start < 0
+                or key.start >= len(self)
+            ):
+                raise IndexError("__getitem__: key out of range")
+            ciphertextBN = [
+                self.__ipclCipherText[i] for i in range(*key.indices(len(self)))
+            ]
+            newCT = ipclCipherText(self.public_key.pubkey, ciphertextBN)
+            return PaillierEncryptedNumber(
+                self.public_key, newCT, self.__exponents[key], len(ciphertextBN)
+            )
+        else:
+            if key < 0 or key >= len(self):
+                raise IndexError("__getitem__: key out of range")
+            return PaillierEncryptedNumber(
+                self.public_key,
+                self.__ipclCipherText.getCipherText(key),
+                self.exponent(key),
+                1,
+            )
+
+    def __setitem__(self, *key):
+        print("__setitem__: Not supported")
+
+    def __iter__(self) -> "PaillierEncryptedNumber":
+        for i in range(len(self)):
+            yield self.__getitem__(i)
 
     def __add__(
         self,
