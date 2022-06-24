@@ -82,7 +82,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="ipcl-python",
-    version="1.1",
+    version="1.1.3",
     author="Sejun Kim",
     author_email="sejun.kim@intel.com",
     description="Python wrapper for Intel Paillier Cryptosystem Library",
