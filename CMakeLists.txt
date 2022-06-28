@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.15.1)
 
-project(IPCL_PYTHON VERSION 1.1.3 LANGUAGES C CXX)
+project(IPCL_PYTHON VERSION 2.0.0 LANGUAGES C CXX)
 
 if(CMAKE_BUILD_TYPE)
   set(RELEASE_TYPES
@@ -40,10 +40,18 @@ set(CMAKE_CXX_FLAGS "-O2 -fpermissive -Wno-as-needed")
 option(IPCL_PYTHON_TEST "Enable testing" ON)
 option(IPCL_PYTHON_DOCS "Enable document building" OFF)
 option(IPCL_PYTHON_ENABLE_OMP "Use OpenMP for IPCL backend" OFF)
+option(IPCL_PYTHON_ENABLE_QAT "Use QAT for IPCL backend" OFF)
+
+if(IPCL_PYTHON_ENABLE_QAT)
+  # disables OMP when QAT is enabled
+  set(IPCL_PYTHON_ENABLE_OMP OFF)
+endif()
+
+
 if(IPCL_PYTHON_ENABLE_OMP)
   find_package(OpenMP)
   if(NOT OpenMP)
-    option(IPCL_PYTHON_ENABLE_OMP "Use OpenMP for IPCL backend" OFF)
+    set(IPCL_PYTHON_ENABLE_OMP OFF)
     message(STATUS "OpenMP not found - disabling for build")
   endif()
 endif()
@@ -54,6 +62,7 @@ message(STATUS "CMAKE_C_COMPILER:           ${CMAKE_C_COMPILER}")
 message(STATUS "IPCL_PYTHON_TEST:           ${IPCL_PYTHON_TEST}")
 message(STATUS "IPCL_PYTHON_DOCS:           ${IPCL_PYTHON_DOCS}")
 message(STATUS "IPCL_PYTHON_ENABLE_OMP:     ${IPCL_PYTHON_ENABLE_OMP}")
+message(STATUS "IPCL_PYTHON_ENABLE_QAT:     ${IPCL_PYTHON_ENABLE_QAT}")
 
 set(IPCL_PYTHON_FORWARD_CMAKE_ARGS
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -86,6 +95,11 @@ pybind11_add_module(ipcl_bindings ${IPCL_BINDINGS_SRCS})
 
 target_include_directories(ipcl_bindings PUBLIC ${PYTHON_INCLUDE_DIRS} ${IPCL_BINDINGS_INC_DIR} ${IPCL_BINDINGS_SRC_DIR})
 target_link_libraries(ipcl_bindings PUBLIC libipcl OpenSSL::SSL OpenSSL::Crypto -lnuma)
+
+if(IPCL_PYTHON_ENABLE_QAT)
+  target_link_libraries(ipcl_bindings PUBLIC udev z)
+endif()
+
 if(IPCL_PYTHON_ENABLE_OMP)
   find_package(OpenMP REQUIRED)
   target_link_libraries(ipcl_bindings PUBLIC OpenMP::OpenMP_CXX)

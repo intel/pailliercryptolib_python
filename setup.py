@@ -47,7 +47,8 @@ class CMakeBuild(build_ext):
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
             "-DPYTHON_EXECUTABLE=" + sys.executable,
-            "-DIPCL_PYTHON_ENABLE_OMP=ON",
+            "-DIPCL_PYTHON_ENABLE_OMP=OFF",
+            "-DIPCL_PYTHON_ENABLE_QAT=ON",
         ]
 
         cfg = "Debug" if self.debug else "Release"
@@ -64,7 +65,7 @@ class CMakeBuild(build_ext):
             build_args += ["--", "/m"]
         else:
             cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
-            build_args += ["--", "-j32"]
+            build_args += ["--", "-j" + str(os.cpu_count())]
 
         env = os.environ.copy()
         env["CXXFLAGS"] = '{} -DVERSION_INFO=\\"{}\\"'.format(
@@ -82,7 +83,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="ipcl-python",
-    version="1.1.3",
+    version="2.0.0",
     author="Sejun Kim",
     author_email="sejun.kim@intel.com",
     description="Python wrapper for Intel Paillier Cryptosystem Library",
