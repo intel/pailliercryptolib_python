@@ -348,7 +348,7 @@ class PaillierEncryptedNumber(object):
             return PaillierEncryptedNumber(
                 self.public_key,
                 self.__ipclCipherText.getCipherText(key),
-                self.exponent(key),
+                [self.exponent(key)],
                 1,
             )
 
