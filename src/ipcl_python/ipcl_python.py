@@ -99,9 +99,10 @@ class PaillierPublicKey(object):
     def apply_obfuscator(self):
         pass
 
-    def raw_encrypt(self, plaintext: int) -> "ipclBigNumber":
-        ct = self.pubkey.encrypt(plaintext, False)
-        return ct
+    def raw_encrypt(
+        self, plaintext: Union[np.ndarray, list, int, float]
+    ) -> "PaillierEncryptedNumber":
+        return self.encrypt(plaintext, apply_obfuscator=False)
 
     def encrypt(
         self,
@@ -195,17 +196,17 @@ class PaillierPrivateKey(object):
     def __repr__(self):
         return self.prikey.__repr__()
 
-    def raw_decrypt(
-        self, ciphertext: Union[int, "ipclBigNumber"]
-    ) -> "ipclBigNumber":
-        if isinstance(ciphertext, int):
-            tempCT = ipclCipherText(
-                self.prikey.public_key, BNUtils.int2BN(ciphertext)
+    def raw_decrypt(self, ciphertext: "PaillierEncryptedNumber") -> int:
+        if ciphertext.public_key != self.public_key:
+            raise ValueError(
+                "PaillierPrivateKey.raw_decrypt:" "Public key mismatch"
             )
-            return self.prikey.decrypt(tempCT)[0]
 
-        tempCT = ipclCipherText(self.prikey.public_key, ciphertext)
-        return self.prikey.decrypt(tempCT)[0]
+        decrypted = self.prikey.decrypt(ciphertext.ciphertext())
+        l_pt = decrypted.getTexts()
+        ret = [BNUtils.BN2int(i) for i in l_pt]
+
+        return ret if len(ciphertext) > 1 else ret[0]
 
     def decrypt(
         self,
