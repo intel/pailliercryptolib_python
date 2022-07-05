@@ -355,10 +355,10 @@ class PaillierEncryptedNumber(object):
     #             [self.exponent(key)],
     #             1,
     #         )
-
+    #
     # def __setitem__(self, *key):
     #     print("__setitem__: Not supported")
-
+    #
     # def __iter__(self) -> "PaillierEncryptedNumber":
     #     for i in range(len(self)):
     #         yield self.__getitem__(i)
