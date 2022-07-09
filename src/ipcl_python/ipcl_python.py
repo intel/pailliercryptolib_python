@@ -79,10 +79,13 @@ class PaillierPublicKey(object):
         self.nsquare = self.n * self.n
 
     def __getstate__(self):
-        return (self.n, self.max_int, self.nsquare, self.pubkey)
+        return self.pubkey
 
     def __setstate__(self, state):
-        self.n, self.max_int, self.nsquare, self.pubkey = state
+        self.pubkey = state
+        self.n = BNUtils.BN2int(self.pubkey.n)
+        self.max_int = self.n // 3 - 1
+        self.nsquare = self.n * self.n
 
     def __repr__(self):
         return self.pubkey.__repr__()
@@ -273,15 +276,20 @@ class PaillierEncryptedNumber(object):
     def __getstate__(self) -> tuple:
         return (
             self.public_key,
-            self.__length,
+            len(self),
             self.exponent(),
-            self.ciphertextBN(),
+            [BNUtils.BN2int(i) for i in self.ciphertextBN()],
         )
 
     def __setstate__(self, state: tuple):
-        self.public_key, self.__length, self.__exponents, ciphertextBN = state
+        (
+            self.public_key,
+            self.__length,
+            self.__exponents,
+            ciphertextPyInt,
+        ) = state
         self.__ipclCipherText = ipclCipherText(
-            self.public_key.pubkey, ciphertextBN
+            self.public_key.pubkey, [BNUtils.int2BN(i) for i in ciphertextPyInt]
         )
 
     def __len__(self) -> int:

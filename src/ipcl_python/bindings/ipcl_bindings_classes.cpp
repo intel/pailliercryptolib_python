@@ -75,6 +75,51 @@ void def_ipclPublicKey(py::module& m) {
             return l_container;
           },
           "encrypt ipcl::PlainText and returns container of ipcl::CipherText")
+      .def("apply_obfuscator",  // obfuscates the ciphertext with given random
+                                // value random value input unsupported for
+                                // v1.1.3 -- to be added in v1.2
+           [](ipcl::PublicKey& self, const BigNumber& ct,
+              const BigNumber& random_value) {
+             if (self.isDJN()) {  // random value is irrelevant
+               std::vector<BigNumber> obfuscator(1);
+               self.applyObfuscator(obfuscator);
+               BigNumber ret = self.getNSQ().ModMul(ct, obfuscator.front());
+               return ret;
+             }
+             // random value support to be added in future release (v1.2)
+             std::vector<BigNumber> obfuscator(1);
+             self.applyObfuscator(obfuscator);
+             BigNumber ret = self.getNSQ().ModMul(ct, obfuscator.front());
+             return ret;
+           })
+      .def("apply_obfuscator",  // overloaded obfuscates the ciphertexts with
+                                // given random value random value input
+                                // unsupported for v1.1.3 -- to be added in v1.2
+           [](ipcl::PublicKey& self, const ipcl::CipherText& ct,
+              const std::vector<BigNumber>& random_value) {
+             size_t sz = ct.getSize();
+             BigNumber sq = self.getNSQ();
+
+             if (self.isDJN()) {  // random value is irrelevant
+               std::vector<BigNumber> obfuscator(sz);
+               self.applyObfuscator(obfuscator);
+               std::vector<BigNumber> ret(sz);
+
+               for (size_t i = 0; i < sz; ++i)
+                 ret[i] = sq.ModMul(ct.getElement(i), obfuscator[i]);
+               py::list l_ret = py::cast(ret);
+               return l_ret;
+             }
+             // random value support to be added in future release (v1.2)
+             std::vector<BigNumber> obfuscator(sz);
+             self.applyObfuscator(obfuscator);
+             std::vector<BigNumber> ret(sz);
+
+             for (size_t i = 0; i < sz; ++i)
+               ret[i] = sq.ModMul(ct.getElement(i), obfuscator[i]);
+             py::list l_ret = py::cast(ret);
+             return l_ret;
+           })
       .def(py::pickle(
           [](const ipcl::PublicKey& self) {  // __getstate__
             return ipclPythonUtils::getTupleIpclPubKey(&self);
@@ -178,11 +223,11 @@ void def_ipclPlainText(py::module& m) {
              return ipcl::PlainText(pData);
            }),
            "ipclPlainText constructor with numpy array of BigNumbers")
-      .def(py::init([](py::array_t<unsigned int> data) {
+      .def(py::init([](py::array_t<Ipp32u> data) {
              py::buffer_info buffer_info = data.request();
              size_t length = buffer_info.shape[0];
-             unsigned int* _data = static_cast<unsigned int*>(buffer_info.ptr);
-             std::vector<unsigned int> pData(_data, _data + length);
+             Ipp32u* _data = static_cast<Ipp32u*>(buffer_info.ptr);
+             std::vector<Ipp32u> pData(_data, _data + length);
              delete[] _data;
              return ipcl::PlainText(pData);
            }),
@@ -222,7 +267,7 @@ void def_ipclPlainText(py::module& m) {
       .def("rotate", &ipcl::PlainText::rotate, "Rotate ipclPlainText container")
       .def(
           "getElementVec",
-          [](const ipcl::PlainText& self, unsigned int n) {
+          [](const ipcl::PlainText& self, const size_t& n) {
             std::vector<uint32_t> vec = self.getElementVec(n);
             py::list l_vec = py::cast(vec);
             return l_vec;
@@ -284,12 +329,11 @@ void def_ipclCipherText(py::module& m) {
              return ipcl::CipherText(pk, pData);
            }),
            "ipclCipherText constructor with numpy array of BigNumbers")
-      .def(py::init([](const ipcl::PublicKey* pk,
-                       py::array_t<unsigned int> data) {
+      .def(py::init([](const ipcl::PublicKey* pk, py::array_t<Ipp32u> data) {
              py::buffer_info buffer_info = data.request();
              size_t length = buffer_info.shape[0];
-             unsigned int* _data = static_cast<unsigned int*>(buffer_info.ptr);
-             std::vector<unsigned int> pData(_data, _data + length);
+             Ipp32u* _data = static_cast<Ipp32u*>(buffer_info.ptr);
+             std::vector<Ipp32u> pData(_data, _data + length);
              delete[] _data;
              return ipcl::CipherText(pk, pData);
            }),
@@ -326,7 +370,7 @@ void def_ipclCipherText(py::module& m) {
            "Rotate ipclCipherText container")
       .def(
           "getElementVec",
-          [](const ipcl::CipherText& self, unsigned int n) {
+          [](const ipcl::CipherText& self, const size_t& n) {
             std::vector<uint32_t> vec = self.getElementVec(n);
             py::list l_vec = py::cast(vec);
             return l_vec;
@@ -376,23 +420,21 @@ void def_ipclCipherText(py::module& m) {
 void def_BigNumber(py::module& m) {
   py::class_<BigNumber>(m, "ipclBigNumber")
       .def(py::init<BigNumber&>(), "ipclBigNumber constructor")
-      .def(py::init([](unsigned int obj) {
-             return std::make_unique<BigNumber>(obj);
-           }),
-           "ipclBigNumber constructor")
+      .def(
+          py::init([](Ipp32u obj) { return std::make_unique<BigNumber>(obj); }),
+          "ipclBigNumber constructor")
       .def(py::init([](py::list data) {
              size_t length = data.size();
-             std::vector<unsigned int> pData =
-                 py::cast<std::vector<unsigned int>>(data);
+             std::vector<Ipp32u> pData = py::cast<std::vector<Ipp32u>>(data);
              return std::unique_ptr<BigNumber>(
                  new BigNumber(pData.data(), pData.size()));
            }),
            "ipclBigNumber constructor with list of integers - little endian "
            "format")
-      .def(py::init([](py::array_t<unsigned int> data) {
+      .def(py::init([](py::array_t<Ipp32u> data) {
              py::buffer_info buffer_info = data.request();
 
-             unsigned int* pData = static_cast<unsigned int*>(buffer_info.ptr);
+             Ipp32u* pData = static_cast<Ipp32u*>(buffer_info.ptr);
              std::vector<ssize_t> shape = buffer_info.shape;
              return std::unique_ptr<BigNumber>(new BigNumber(pData, shape[0]));
            }),
@@ -414,7 +456,7 @@ void def_BigNumber(py::module& m) {
              return s_dec;
            })
       .def("__getitem__",
-           [](BigNumber const& self, unsigned int n) {
+           [](BigNumber const& self, const size_t& n) {
              int bnBitLen;
              Ipp32u* bnData;
              ippsRef_BN(nullptr, &bnBitLen, &bnData, self);
@@ -472,14 +514,12 @@ void def_BigNumber(py::module& m) {
       .def(py::pickle(
           [](const BigNumber& self) {  // __getstate__
             auto btl = ipclPythonUtils::BN2pylist(self);
-            return py::make_tuple(btl.first, btl.second);
+            return py::make_tuple(btl.second);
           },
           [](py::tuple t) {  // __setstate__
-            size_t length = py::cast<size_t>(t[0]);
-            py::list l_dt = t[1];
-            Ipp32u* bnData = new Ipp32u[length];
-            for (int i = 0; i < length; ++i)
-              bnData[i] = py::cast<unsigned int>(l_dt[i]);
-            return std::unique_ptr<BigNumber>(new BigNumber(bnData, length));
+            py::list l_dt = t[0];
+            std::vector<Ipp32u> bnData = py::cast<std::vector<Ipp32u>>(l_dt);
+            return std::unique_ptr<BigNumber>(
+                new BigNumber(bnData.data(), bnData.size()));
           }));
 }
