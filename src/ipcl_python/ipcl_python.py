@@ -90,17 +90,15 @@ class PaillierPublicKey(object):
     def __repr__(self):
         return self.pubkey.__repr__()
 
-    def __str__(self):
-        return self.pubkey.n
-
     def __eq__(self, other):
         return self.n == other.n
 
     def __hash__(self):
         return self.pubkey.__hash__()
 
-    def apply_obfuscator(self):
-        pass
+    def apply_obfuscator(self, x):
+        # apply_obfuscator function is embedded in encrypt
+        return x
 
     def raw_encrypt(
         self, plaintext: Union[np.ndarray, list, int, float]
@@ -333,6 +331,9 @@ class PaillierEncryptedNumber(object):
             raise IndexError("exponent: idx out of range")
 
         return self.__exponents[idx]
+
+    def apply_obfuscator(self, x):
+        return x
 
     # TODO(skmono): Enable after making it compatible with recursive_decrypt
     # def __getitem__(self, key: Union[int, slice]
