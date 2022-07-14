@@ -62,8 +62,8 @@ void def_ipclPublicKey(py::module& m) {
           [](ipcl::PublicKey& self, const ipcl::PlainText& pt,
              bool make_secure) {
             py::gil_scoped_release release;
-            ipcl::CipherText ct = self.encrypt(pt, make_secure);
             py::gil_scoped_acquire acquire;
+            ipcl::CipherText ct = self.encrypt(pt, make_secure);
             return ct;
           },
           "encrypt ipcl::PlainText and returns ipcl::CipherText")
@@ -73,8 +73,8 @@ void def_ipclPublicKey(py::module& m) {
           [](ipcl::PublicKey& self, const ipcl::PlainText& pt,
              bool make_secure) {
             py::gil_scoped_release release;
-            ipcl::CipherText ct = self.encrypt(pt, make_secure);
             py::gil_scoped_acquire acquire;
+            ipcl::CipherText ct = self.encrypt(pt, make_secure);
             py::list l_container = py::cast(ct.getTexts());
             return l_container;
           },

@@ -43,10 +43,9 @@ option(IPCL_PYTHON_ENABLE_OMP "Use OpenMP for IPCL backend" OFF)
 option(IPCL_PYTHON_ENABLE_QAT "Use QAT for IPCL backend" OFF)
 
 if(IPCL_PYTHON_ENABLE_QAT)
-  # disables OMP when QAT is enabled
+  # disables OMP when QAT is enabled - will be removed later
   set(IPCL_PYTHON_ENABLE_OMP OFF)
 endif()
-
 
 if(IPCL_PYTHON_ENABLE_OMP)
   find_package(OpenMP)
@@ -55,7 +54,6 @@ if(IPCL_PYTHON_ENABLE_OMP)
     message(STATUS "OpenMP not found - disabling for build")
   endif()
 endif()
-
 
 message(STATUS "CMAKE_BUILD_TYPE:           ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_C_COMPILER:           ${CMAKE_C_COMPILER}")
