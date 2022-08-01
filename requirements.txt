@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 wheel
-numpy>=1.18.4, <1.19.0
+numpy==1.18.4
 pycryptodomex==3.6.6
 gmpy2==2.0.8
 cachetools==3.0.0
