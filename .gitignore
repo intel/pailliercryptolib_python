@@ -1,0 +1,33 @@
+# Copyright (C) 2021 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+.vscode/
+.vs/
+build*/
+dev_*.py
+
+.DS_Store
+
+# Doxygen files
+docs/doxygen/
+Doxyfile
+
+# Sphinx files
+_build/
+
+# Generated files
+*.log
+dist/
+
+# Python files
+venv/
+__pycache__/
+.ipynb_checkpoints/
+.mypy_cache/
+.env
+*.egg-info/
+*.cpython*.so
+.eggs/
+
+# vim
+**.swp

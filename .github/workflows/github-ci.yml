@@ -1,0 +1,59 @@
+# Copyright (C) 2021 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+name: ipcl-python_internal
+on:
+  # By default this will run when the activity type is "opened", "synchronize",
+  # or "reopened".
+  pull_request:
+    branches:
+      - main
+      - development
+  push:
+    branches:
+      - development
+
+  # Manually run this workflow on any specified branch.
+  workflow_dispatch:
+
+##############
+# IceLake CI #
+##############
+jobs:
+  format:
+    name: Format check
+    runs-on: [self-hosted, linux, x64, icx]
+    # Use environment protection (require review)
+    environment: intel_workflow
+    steps:
+      - uses: actions/checkout@v2
+        # Add local bin for cpplint
+      - name: Setup
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: pre-commit
+        run: pre-commit run --all-files
+
+  # python-module-test:
+  #   name: Test python extension module
+  #   needs: [format]
+  #   runs-on: [self-hosted, linux, x64, icx]
+  #   # Use environment protection (require review)
+  #   environment: intel_workflow
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #       working-directory: .
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Validate paths
+  #       run: |
+  #         whoami
+  #         echo $HOME
+  #         echo $GITHUB_WORKSPACE
+  #         echo "Testing from branch:"
+  #         echo $GITHUB_REF
+  #         pwd
+
+  #     # Unit tests and examples
+  #     - name: Run the unit test
+  #       run: python3 setup.py test
