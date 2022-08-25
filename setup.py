@@ -59,12 +59,12 @@ class CMakeBuild(build_ext):
                     cfg.upper(), extdir
                 )
             ]
-            if sys.maxsize > 2 ** 32:
+            if sys.maxsize > 2**32:
                 cmake_args += ["-A", "x64"]
             build_args += ["--", "/m"]
         else:
             cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
-            build_args += ["--", "-j"+str(os.cpu_count()-1)]
+            build_args += ["--", "-j" + str(os.cpu_count() - 1)]
 
         env = os.environ.copy()
         env["CXXFLAGS"] = '{} -DVERSION_INFO=\\"{}\\"'.format(
