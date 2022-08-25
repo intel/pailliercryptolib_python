@@ -53,10 +53,7 @@ jobs:
           echo "Testing from branch:"
           echo $GITHUB_REF
           pwd
-      # Install Python extension
       - name: Install IPCL-Python extension
         run: python3 setup.py install
-
-      # Unit test
       - name: Run the unit test
         run: python3 setup.py test
