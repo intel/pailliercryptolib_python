@@ -59,7 +59,7 @@ void def_ipclPublicKey(py::module& m) {
                              "square of ipclPublicKey n in ipclBigNumber")
       .def(
           "encrypt",  // encrypt plaintext
-          [](ipcl::PublicKey& self, const ipcl::PlainText& pt,
+          [](const ipcl::PublicKey& self, const ipcl::PlainText& pt,
              bool make_secure) {
             ipcl::CipherText ct = self.encrypt(pt, make_secure);
             return ct;
@@ -68,49 +68,25 @@ void def_ipclPublicKey(py::module& m) {
       .def(
           "encrypt_tolist",  // encrypt plaintext and return container of
                              // Ciphertext
-          [](ipcl::PublicKey& self, const ipcl::PlainText& pt,
+          [](const ipcl::PublicKey& self, const ipcl::PlainText& pt,
              bool make_secure) {
             ipcl::CipherText ct = self.encrypt(pt, make_secure);
             py::list l_container = py::cast(ct.getTexts());
             return l_container;
           },
           "encrypt ipcl::PlainText and returns container of ipcl::CipherText")
-      .def("apply_obfuscator",  // obfuscates the ciphertext with given random
-                                // value random value input unsupported for
-                                // v1.1.3 -- to be added in v1.2
-           [](ipcl::PublicKey& self, const BigNumber& ct,
-              const BigNumber& random_value) {
-             if (self.isDJN()) {  // random value is irrelevant
-               std::vector<BigNumber> obfuscator(1);
-               self.applyObfuscator(obfuscator);
-               BigNumber ret = self.getNSQ().ModMul(ct, obfuscator.front());
-               return ret;
-             }
-             // random value support to be added in future release (v1.2)
+      .def("apply_obfuscator",  // ciphertext obfuscator
+           [](const ipcl::PublicKey& self, const BigNumber& ct) {
              std::vector<BigNumber> obfuscator(1);
              self.applyObfuscator(obfuscator);
              BigNumber ret = self.getNSQ().ModMul(ct, obfuscator.front());
              return ret;
            })
-      .def("apply_obfuscator",  // overloaded obfuscates the ciphertexts with
-                                // given random value random value input
-                                // unsupported for v1.1.3 -- to be added in v1.2
-           [](ipcl::PublicKey& self, const ipcl::CipherText& ct,
-              const std::vector<BigNumber>& random_value) {
+      .def("apply_obfuscator",  // overloaded ciphertext obfuscator
+           [](const ipcl::PublicKey& self, const ipcl::CipherText& ct) {
              size_t sz = ct.getSize();
              BigNumber sq = self.getNSQ();
 
-             if (self.isDJN()) {  // random value is irrelevant
-               std::vector<BigNumber> obfuscator(sz);
-               self.applyObfuscator(obfuscator);
-               std::vector<BigNumber> ret(sz);
-
-               for (size_t i = 0; i < sz; ++i)
-                 ret[i] = sq.ModMul(ct.getElement(i), obfuscator[i]);
-               py::list l_ret = py::cast(ret);
-               return l_ret;
-             }
-             // random value support to be added in future release (v1.2)
              std::vector<BigNumber> obfuscator(sz);
              self.applyObfuscator(obfuscator);
              std::vector<BigNumber> ret(sz);
