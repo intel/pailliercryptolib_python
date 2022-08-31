@@ -111,7 +111,7 @@ class PaillierPublicKey(object):
         self,
         value: Union[np.ndarray, list, int, float],
         apply_obfuscator: bool = True,
-    ):
+    ) -> "PaillierEncryptedNumber":
         """
         Encrypts scalar or list/array of scalars
 
@@ -138,7 +138,6 @@ class PaillierPublicKey(object):
             expo.append(encoding.exponent)
         plaintext = ipclPlainText(enc)
         ct = self.pubkey.encrypt(plaintext, apply_obfuscator)
-
         return PaillierEncryptedNumber(
             self, ct, exponents=expo, length=len(value)
         )
