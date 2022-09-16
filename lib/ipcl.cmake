@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 include(ExternalProject)
+include(GNUInstallDirs)
+
 MESSAGE(STATUS "Configuring Intel Paillier Cryptosystem Library")
 set(IPCL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_ipcl)
 set(IPCL_GIT_REPO_URL https://github.com/intel/pailliercryptolib.git)
