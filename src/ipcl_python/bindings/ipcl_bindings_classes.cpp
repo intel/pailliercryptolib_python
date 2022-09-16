@@ -77,22 +77,14 @@ void def_ipclPublicKey(py::module& m) {
           "encrypt ipcl::PlainText and returns container of ipcl::CipherText")
       .def("apply_obfuscator",  // ciphertext obfuscator
            [](const ipcl::PublicKey& self, const BigNumber& ct) {
-             std::vector<BigNumber> obfuscator(1);
-             self.applyObfuscator(obfuscator);
-             BigNumber ret = self.getNSQ().ModMul(ct, obfuscator.front());
-             return ret;
+             std::vector<BigNumber> ret(1, ct);
+             self.applyObfuscator(ret);
+             return ret[0];
            })
       .def("apply_obfuscator",  // overloaded ciphertext obfuscator
            [](const ipcl::PublicKey& self, const ipcl::CipherText& ct) {
-             size_t sz = ct.getSize();
-             BigNumber sq = self.getNSQ();
-
-             std::vector<BigNumber> obfuscator(sz);
-             self.applyObfuscator(obfuscator);
-             std::vector<BigNumber> ret(sz);
-
-             for (size_t i = 0; i < sz; ++i)
-               ret[i] = sq.ModMul(ct.getElement(i), obfuscator[i]);
+             std::vector<BigNumber> ret = ct.getTexts();
+             self.applyObfuscator(ret);
              py::list l_ret = py::cast(ret);
              return l_ret;
            })
