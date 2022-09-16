@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 include(ExternalProject)
+include(GNUInstallDirs)
+
 MESSAGE(STATUS "Configuring Intel Paillier Cryptosystem Library")
 set(IPCL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_ipcl)
 set(IPCL_GIT_REPO_URL https://github.com/intel/pailliercryptolib.git)
@@ -31,7 +33,7 @@ ExternalProject_Get_Property(ext_ipcl SOURCE_DIR BINARY_DIR)
 add_library(libipcl INTERFACE)
 add_dependencies(libipcl ext_ipcl)
 
-  target_link_libraries(libipcl INTERFACE
-        ${IPCL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libipcl.a)
+target_link_libraries(libipcl INTERFACE
+      ${IPCL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libipcl.a)
 
 target_include_directories(libipcl INTERFACE ${IPCL_PREFIX}/include)

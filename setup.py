@@ -48,6 +48,7 @@ class CMakeBuild(build_ext):
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
             "-DPYTHON_EXECUTABLE=" + sys.executable,
             "-DIPCL_PYTHON_ENABLE_OMP=ON",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
         ]
 
         cfg = "Debug" if self.debug else "Release"
