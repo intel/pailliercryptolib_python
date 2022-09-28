@@ -38,9 +38,9 @@ repos:
             - E203,W503
     - repo: local
       hooks:
-        - id: clang-format-11
-          name: clang-format-11
-          entry: clang-format-11
+        - id: clang-format
+          name: clang-format
+          entry: clang-format
           language: system
           files: \.(c|cc|cxx|cpp|h|hpp|hxx|js|proto)$
           args:
