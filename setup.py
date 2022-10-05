@@ -59,12 +59,12 @@ class CMakeBuild(build_ext):
                     cfg.upper(), extdir
                 )
             ]
-            if sys.maxsize > 2 ** 32:
+            if sys.maxsize > 2**32:
                 cmake_args += ["-A", "x64"]
             build_args += ["--", "/m"]
         else:
             cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
-            build_args += ["--", "-j32"]
+            build_args += ["--", "-j" + str(os.cpu_count() - 1)]
 
         env = os.environ.copy()
         env["CXXFLAGS"] = '{} -DVERSION_INFO=\\"{}\\"'.format(
@@ -82,7 +82,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="ipcl-python",
-    version="1.1.3",
+    version="1.1.4",
     author="Sejun Kim",
     author_email="sejun.kim@intel.com",
     description="Python wrapper for Intel Paillier Cryptosystem Library",
@@ -99,8 +99,8 @@ setup(
     ],
     install_requires=[
         "wheel",
-        "numpy==1.18.4",
-        "pycryptodomex==3.6.6",
+        "numpy==1.23.1",
+        "pycryptodomex==3.15.0",
         "gmpy2==2.0.8",
         "cachetools==3.0.0",
         "ruamel.yaml==0.16.10",
