@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 include(ExternalProject)
+include(GNUInstallDirs)
+
 MESSAGE(STATUS "Configuring Intel Paillier Cryptosystem Library")
 set(IPCL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_ipcl)
-set(IPCL_GIT_REPO_URL git@github.com:intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib.git)
+set(IPCL_GIT_REPO_URL https://github.com/intel/pailliercryptolib.git)
 set(IPCL_GIT_LABEL development)
 set(IPCL_SRC_DIR ${IPCL_PREFIX}/src/ext_ipcl/)
 
@@ -31,15 +33,7 @@ ExternalProject_Get_Property(ext_ipcl SOURCE_DIR BINARY_DIR)
 add_library(libipcl INTERFACE)
 add_dependencies(libipcl ext_ipcl)
 
-file(STRINGS /etc/os-release LINUX_ID REGEX "^ID=")
-string(REGEX REPLACE "ID=\(.*)" "\\1" LINUX_ID "${LINUX_ID}")
-if(${LINUX_ID} STREQUAL "ubuntu")
-  target_link_libraries(libipcl INTERFACE
-        ${IPCL_PREFIX}/lib/libipcl.a)
-else()
-  # non debian systems install ipcl under lib64
-  target_link_libraries(libipcl INTERFACE
-  ${IPCL_PREFIX}/lib64/libipcl.a)
-endif()
+target_link_libraries(libipcl INTERFACE
+      ${IPCL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libipcl.a)
 
 target_include_directories(libipcl INTERFACE ${IPCL_PREFIX}/include)

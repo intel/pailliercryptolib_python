@@ -33,27 +33,27 @@ jobs:
       - name: pre-commit
         run: pre-commit run --all-files
 
-  # python-module-test:
-  #   name: Test python extension module
-  #   needs: [format]
-  #   runs-on: [self-hosted, linux, x64, icx]
-  #   # Use environment protection (require review)
-  #   environment: intel_workflow
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #       working-directory: .
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Validate paths
-  #       run: |
-  #         whoami
-  #         echo $HOME
-  #         echo $GITHUB_WORKSPACE
-  #         echo "Testing from branch:"
-  #         echo $GITHUB_REF
-  #         pwd
-
-  #     # Unit tests and examples
-  #     - name: Run the unit test
-  #       run: python3 setup.py test
+  build-and-test:
+    name: Build and test IPCL-Python extension
+    needs: [format]
+    runs-on: [self-hosted, linux, x64, icx]
+    # Use environment protection (require review)
+    environment: intel_workflow
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v2
+      - name: Validate paths
+        run: |
+          whoami
+          echo $HOME
+          echo $GITHUB_WORKSPACE
+          echo "Testing from branch:"
+          echo $GITHUB_REF
+          pwd
+      - name: Install IPCL-Python extension
+        run: python3 setup.py install --user
+      - name: Run the unit test
+        run: python3 setup.py test

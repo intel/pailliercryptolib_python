@@ -4,13 +4,15 @@ Intel Paillier Cryptosystem Library - Python is a Python extension package inten
 
 ## Contents
 - [Python bindings and wrapper for Intel Paillier Cryptosystem Library](#python-bindings-and-wrapper-for-intel-paillier-cryptosystem-library)
-  - [Contents](#content)
+  - [Contents](#contents)
   - [Introduction](#introduction)
   - [Installing the package](#installing-the-package)
     - [Prerequisites](#prerequisites)
     - [Dependencies](#dependencies)
     - [Installation](#installation)
   - [Usage](#usage)
+    - [Benchmark](#benchmark)
+- [Standardization](#standardization)
 - [Contributors](#contributors)
 
 ## Introduction
@@ -54,7 +56,17 @@ g++ >= 7.0 or clang >= 10.0
 python >= 3.6.9
 pip>=22.0.1
 ```
-For additional dependencies regarding the C++ backend, refer to the [Intel Paillier Cryptosystem Library](https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib).
+
+The following libraries and tools are also required,
+```
+nasm >= 2.15
+OpenSSL >= 1.1.0
+numa >= 2.0.12
+gmp >= 5.0.0
+mpfr >= 3.1.0
+```
+
+For additional dependencies regarding the C++ backend, refer to the [Intel Paillier Cryptosystem Library](https://github.com/intel/pailliercryptolib).
 
 ### Installation
 Compiling and installing the package can be done by:
@@ -123,11 +135,18 @@ print(np.allclose(a * b, de_d))
 
 For more details, please refer to [documentation (TBD)](https://github.com/intel/pailliercryptolib-python).
 
+### Benchmark
+We provide a benchmark tool, located under the folder [bench](bench/bench_ipcl_python.py). In order to run the benchmark, please install the [Google Benchmark](https://github.com/google/benchmark) via,
+```bash
+pip install google-benchmark>=1.6.1
+```
+
 # Standardization
-This library is in compliance with the homomorphic encryption standards [ISO/IEC 18033-6](https://www.iso.org/standard/67740.html).
-The compliance test is included in the C++ backend [unit-test](https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib/blob/main/test/test_cryptography.cpp#L117-L258).
+This library is certified for ISO compliance with the homomorphic encryption standards [ISO/IEC 18033-6](https://www.iso.org/standard/67740.html) by Dekra.
+
 # Contributors
 Main contributors to this project, sorted by alphabetical order of last name are:
   - [Xiaojun Huang](https://github.com/xhuan28)
   - [Sejun Kim](https://github.com/skmono) (lead)
   - [Bin Wang](https://github.com/bwang30)
+  - [Pengfei Zhao](https://github.com/justalittlenoob)

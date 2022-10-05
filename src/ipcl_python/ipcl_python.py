@@ -96,9 +96,11 @@ class PaillierPublicKey(object):
     def __hash__(self):
         return self.pubkey.__hash__()
 
-    def apply_obfuscator(self, x):
+    def apply_obfuscator(self, x: Union[int, ipclBigNumber]):
         # apply_obfuscator function is embedded in encrypt
-        return x
+        if isinstance(x, int):
+            return self.pubkey.apply_obfuscator(BNUtils.int2BN(x))
+        return self.pubkey.apply_obfuscator(x)
 
     def raw_encrypt(
         self, plaintext: Union[np.ndarray, list, int, float]
@@ -109,7 +111,7 @@ class PaillierPublicKey(object):
         self,
         value: Union[np.ndarray, list, int, float],
         apply_obfuscator: bool = True,
-    ):
+    ) -> "PaillierEncryptedNumber":
         """
         Encrypts scalar or list/array of scalars
 
@@ -136,7 +138,6 @@ class PaillierPublicKey(object):
             expo.append(encoding.exponent)
         plaintext = ipclPlainText(enc)
         ct = self.pubkey.encrypt(plaintext, apply_obfuscator)
-
         return PaillierEncryptedNumber(
             self, ct, exponents=expo, length=len(value)
         )
@@ -332,8 +333,11 @@ class PaillierEncryptedNumber(object):
 
         return self.__exponents[idx]
 
-    def apply_obfuscator(self, x):
-        return x
+    def apply_obfuscator(self):
+        self.__ipclCipherText = ipclCipherText(
+            self.public_key.pubkey,
+            self.public_key.pubkey.apply_obfuscator(self.__ipclCipherText),
+        )
 
     # TODO(skmono): Enable after making it compatible with recursive_decrypt
     # def __getitem__(self, key: Union[int, slice]
