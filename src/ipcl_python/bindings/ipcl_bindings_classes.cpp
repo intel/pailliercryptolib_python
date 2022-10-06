@@ -1,4 +1,4 @@
-z  // Copyright (C) 2021 Intel Corporation
+// Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
 #include <memory>
@@ -6,7 +6,7 @@ z  // Copyright (C) 2021 Intel Corporation
 
 #include "include/ipcl_bindings.h"
 
-    namespace py = pybind11;
+namespace py = pybind11;
 
 void def_ipclPublicKey(py::module& m) {
   // Paillier publickey module
