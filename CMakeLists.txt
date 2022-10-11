@@ -35,11 +35,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_C_FLAGS "-O2")
 set(CMAKE_CXX_FLAGS "-O2 -fpermissive -Wno-as-needed")
 
-
 #---------------------------------------------------
 option(IPCL_PYTHON_TEST "Enable testing" ON)
 option(IPCL_PYTHON_DOCS "Enable document building" OFF)
 option(IPCL_PYTHON_ENABLE_OMP "Use OpenMP for IPCL backend" OFF)
+option(IPCL_PYTHON_DETECT_IFMA_RUNTIME "Use AVX512IFMA runtime detection" OFF)
 option(IPCL_PYTHON_ENABLE_QAT "Use QAT for IPCL backend" OFF)
 
 if(IPCL_PYTHON_ENABLE_QAT)
@@ -55,12 +55,14 @@ if(IPCL_PYTHON_ENABLE_OMP)
   endif()
 endif()
 
-message(STATUS "CMAKE_BUILD_TYPE:           ${CMAKE_BUILD_TYPE}")
-message(STATUS "CMAKE_C_COMPILER:           ${CMAKE_C_COMPILER}")
-message(STATUS "IPCL_PYTHON_TEST:           ${IPCL_PYTHON_TEST}")
-message(STATUS "IPCL_PYTHON_DOCS:           ${IPCL_PYTHON_DOCS}")
-message(STATUS "IPCL_PYTHON_ENABLE_OMP:     ${IPCL_PYTHON_ENABLE_OMP}")
-message(STATUS "IPCL_PYTHON_ENABLE_QAT:     ${IPCL_PYTHON_ENABLE_QAT}")
+message(STATUS "CMAKE_BUILD_TYPE:                 ${CMAKE_BUILD_TYPE}")
+message(STATUS "CMAKE_C_COMPILER:                 ${CMAKE_C_COMPILER}")
+message(STATUS "CMAKE_CXX_COMPILER:               ${CMAKE_CXX_COMPILER}")
+message(STATUS "IPCL_PYTHON_TEST:                 ${IPCL_PYTHON_TEST}")
+message(STATUS "IPCL_PYTHON_DOCS:                 ${IPCL_PYTHON_DOCS}")
+message(STATUS "IPCL_PYTHON_DETECT_IFMA_RUNTIME:  ${IPCL_PYTHON_DETECT_IFMA_RUNTIME}")
+message(STATUS "IPCL_PYTHON_ENABLE_OMP:           ${IPCL_PYTHON_ENABLE_OMP}")
+message(STATUS "IPCL_PYTHON_ENABLE_QAT:           ${IPCL_PYTHON_ENABLE_QAT}")
 
 set(IPCL_PYTHON_FORWARD_CMAKE_ARGS
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}

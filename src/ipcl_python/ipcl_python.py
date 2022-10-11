@@ -79,16 +79,16 @@ class PaillierPublicKey(object):
         self.nsquare = self.n * self.n
 
     def __getstate__(self):
-        return (self.n, self.max_int, self.nsquare, self.pubkey)
+        return self.pubkey
 
     def __setstate__(self, state):
-        self.n, self.max_int, self.nsquare, self.pubkey = state
+        self.pubkey = state
+        self.n = BNUtils.BN2int(self.pubkey.n)
+        self.max_int = self.n // 3 - 1
+        self.nsquare = self.n * self.n
 
     def __repr__(self):
         return self.pubkey.__repr__()
-
-    def __str__(self):
-        return self.pubkey.n
 
     def __eq__(self, other):
         return self.n == other.n
@@ -96,8 +96,11 @@ class PaillierPublicKey(object):
     def __hash__(self):
         return self.pubkey.__hash__()
 
-    def apply_obfuscator(self):
-        pass
+    def apply_obfuscator(self, x: Union[int, ipclBigNumber]):
+        # apply_obfuscator function is embedded in encrypt
+        if isinstance(x, int):
+            return self.pubkey.apply_obfuscator(BNUtils.int2BN(x))
+        return self.pubkey.apply_obfuscator(x)
 
     def raw_encrypt(
         self, plaintext: Union[np.ndarray, list, int, float]
@@ -108,7 +111,7 @@ class PaillierPublicKey(object):
         self,
         value: Union[np.ndarray, list, int, float],
         apply_obfuscator: bool = True,
-    ):
+    ) -> "PaillierEncryptedNumber":
         """
         Encrypts scalar or list/array of scalars
 
@@ -135,7 +138,6 @@ class PaillierPublicKey(object):
             expo.append(encoding.exponent)
         plaintext = ipclPlainText(enc)
         ct = self.pubkey.encrypt(plaintext, apply_obfuscator)
-
         return PaillierEncryptedNumber(
             self, ct, exponents=expo, length=len(value)
         )
@@ -273,15 +275,20 @@ class PaillierEncryptedNumber(object):
     def __getstate__(self) -> tuple:
         return (
             self.public_key,
-            self.__length,
+            len(self),
             self.exponent(),
-            self.ciphertextBN(),
+            [BNUtils.BN2int(i) for i in self.ciphertextBN()],
         )
 
     def __setstate__(self, state: tuple):
-        self.public_key, self.__length, self.__exponents, ciphertextBN = state
+        (
+            self.public_key,
+            self.__length,
+            self.__exponents,
+            ciphertextPyInt,
+        ) = state
         self.__ipclCipherText = ipclCipherText(
-            self.public_key.pubkey, ciphertextBN
+            self.public_key.pubkey, [BNUtils.int2BN(i) for i in ciphertextPyInt]
         )
 
     def __len__(self) -> int:
@@ -326,38 +333,48 @@ class PaillierEncryptedNumber(object):
 
         return self.__exponents[idx]
 
-    def __getitem__(self, key: Union[int, slice]) -> "PaillierEncryptedNumber":
-        if isinstance(key, slice):
-            if (
-                key.stop >= len(self)
-                or key.stop < 0
-                or key.start < 0
-                or key.start >= len(self)
-            ):
-                raise IndexError("__getitem__: key out of range")
-            ciphertextBN = [
-                self.__ipclCipherText[i] for i in range(*key.indices(len(self)))
-            ]
-            newCT = ipclCipherText(self.public_key.pubkey, ciphertextBN)
-            return PaillierEncryptedNumber(
-                self.public_key, newCT, self.__exponents[key], len(ciphertextBN)
-            )
-        else:
-            if key < 0 or key >= len(self):
-                raise IndexError("__getitem__: key out of range")
-            return PaillierEncryptedNumber(
-                self.public_key,
-                self.__ipclCipherText.getCipherText(key),
-                self.exponent(key),
-                1,
-            )
+    def apply_obfuscator(self):
+        self.__ipclCipherText = ipclCipherText(
+            self.public_key.pubkey,
+            self.public_key.pubkey.apply_obfuscator(self.__ipclCipherText),
+        )
 
-    def __setitem__(self, *key):
-        print("__setitem__: Not supported")
-
-    def __iter__(self) -> "PaillierEncryptedNumber":
-        for i in range(len(self)):
-            yield self.__getitem__(i)
+    # TODO(skmono): Enable after making it compatible with recursive_decrypt
+    # def __getitem__(self, key: Union[int, slice]
+    # ) -> "PaillierEncryptedNumber":
+    #     if isinstance(key, slice):
+    #         if (
+    #             key.stop >= len(self)
+    #             or key.stop < 0
+    #             or key.start < 0
+    #             or key.start >= len(self)
+    #         ):
+    #             raise IndexError("__getitem__: key out of range")
+    #         ciphertextBN = [
+    #             self.__ipclCipherText[i]
+    #             for i in range(*key.indices(len(self)))
+    #         ]
+    #         newCT = ipclCipherText(self.public_key.pubkey, ciphertextBN)
+    #         return PaillierEncryptedNumber(
+    #             self.public_key, newCT,
+    #             self.__exponents[key], len(ciphertextBN)
+    #         )
+    #     else:
+    #         if key < 0 or key >= len(self):
+    #             raise IndexError("__getitem__: key out of range")
+    #         return PaillierEncryptedNumber(
+    #             self.public_key,
+    #             self.__ipclCipherText.getCipherText(key),
+    #             [self.exponent(key)],
+    #             1,
+    #         )
+    #
+    # def __setitem__(self, *key):
+    #     print("__setitem__: Not supported")
+    #
+    # def __iter__(self) -> "PaillierEncryptedNumber":
+    #     for i in range(len(self)):
+    #         yield self.__getitem__(i)
 
     def __add__(
         self,

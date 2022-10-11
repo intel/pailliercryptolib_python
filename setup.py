@@ -60,7 +60,7 @@ class CMakeBuild(build_ext):
                     cfg.upper(), extdir
                 )
             ]
-            if sys.maxsize > 2 ** 32:
+            if sys.maxsize > 2**32:
                 cmake_args += ["-A", "x64"]
             build_args += ["--", "/m"]
         else:
@@ -100,8 +100,8 @@ setup(
     ],
     install_requires=[
         "wheel",
-        "numpy==1.18.4",
-        "pycryptodomex==3.6.6",
+        "numpy==1.23.1",
+        "pycryptodomex==3.15.0",
         "gmpy2==2.0.8",
         "cachetools==3.0.0",
         "ruamel.yaml==0.16.10",

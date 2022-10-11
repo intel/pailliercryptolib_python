@@ -35,24 +35,19 @@ std::pair<int, py::list> BN2pylist(const BigNumber& bn) {
   Ipp32u* bnData;
   ippsRef_BN(nullptr, &bnBitLen, &bnData, bn);
   size_t length = BITSIZE_WORD(bnBitLen);
-  py::list l_dt;
-  for (size_t i = 0; i < length; i++) l_dt.append(bnData[i]);
+  std::vector<Ipp32u> tmp(bnData, bnData + length);
+  py::list l_dt = py::cast(tmp);
   return std::make_pair(length, l_dt);
 }
 
 BigNumber pylist2BN(const py::list& l_bn) {
-  size_t length = l_bn.size();
-  Ipp32u* bnData = new Ipp32u[length];
-  for (size_t i = 0; i < length; ++i)
-    bnData[i] = py::cast<unsigned int>(l_bn[i]);
-  return BigNumber(bnData, length);
+  std::vector<Ipp32u> bnData = py::cast<std::vector<Ipp32u>>(l_bn);
+  return BigNumber(bnData.data(), bnData.size());
 }
 
 BigNumber pylist2BN(size_t length, const py::list& l_bn) {
-  Ipp32u* bnData = new Ipp32u[length];
-  for (size_t i = 0; i < length; ++i)
-    bnData[i] = py::cast<unsigned int>(l_bn[i]);
-  return BigNumber(bnData, length);
+  std::vector<Ipp32u> bnData = py::cast<std::vector<Ipp32u>>(l_bn);
+  return BigNumber(bnData.data(), length);
 }
 
 py::tuple getTupleIpclPubKey(const ipcl::PublicKey* pk) {

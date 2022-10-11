@@ -2,13 +2,22 @@
 # SPDX-License-Identifier: Apache-2.0
 
 include(ExternalProject)
+include(GNUInstallDirs)
+
 MESSAGE(STATUS "Configuring Intel Paillier Cryptosystem Library")
 set(IPCL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_ipcl)
-set(IPCL_GIT_REPO_URL git@github.com:intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib.git)
-set(IPCL_GIT_LABEL skmono/qat_static_build_adding_pygil_ctl)#skmono/qat_static_build)
+set(IPCL_GIT_REPO_URL https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib.git)
+set(IPCL_GIT_LABEL skmono/qat_debug_mode)#qat_integration)
 set(IPCL_SRC_DIR ${IPCL_PREFIX}/src/ext_ipcl/)
 
 set(IPCL_CXX_FLAGS "${IPCL_PYTHON_FORWARD_CMAKE_ARGS}")
+set(IPCL_DEBUG_MODE ON)
+
+if(IPCL_DEBUG_MODE)
+  set(IPCL_BUILD_TYPE Debug)
+else()
+  set(IPCL_BUILD_TYPE Release)
+endif()
 
 ExternalProject_Add(
   ext_ipcl
@@ -24,6 +33,7 @@ ExternalProject_Add(
              -DIPCL_SHARED=OFF
              -DIPCL_ENABLE_OMP=${IPCL_PYTHON_ENABLE_OMP}
              -DIPCL_ENABLE_QAT=${IPCL_PYTHON_ENABLE_QAT}
+             -DCMAKE_BUILD_TYPE=${IPCL_BUILD_TYPE}
   UPDATE_COMMAND ""
 )
 
@@ -32,15 +42,11 @@ ExternalProject_Get_Property(ext_ipcl SOURCE_DIR BINARY_DIR)
 add_library(libipcl INTERFACE)
 add_dependencies(libipcl ext_ipcl)
 
-file(STRINGS /etc/os-release LINUX_ID REGEX "^ID=")
-string(REGEX REPLACE "ID=\(.*)" "\\1" LINUX_ID "${LINUX_ID}")
-if(${LINUX_ID} STREQUAL "ubuntu")
-  target_link_libraries(libipcl INTERFACE
-        ${IPCL_PREFIX}/lib/libipcl.a)
+if(IPCL_DEBUG_MODE)
+target_link_libraries(libipcl INTERFACE
+${IPCL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libipcl_debug.a)
 else()
-  # non debian systems install ipcl under lib64
   target_link_libraries(libipcl INTERFACE
-  ${IPCL_PREFIX}/lib64/libipcl.a)
+        ${IPCL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libipcl.a)
 endif()
-
 target_include_directories(libipcl INTERFACE ${IPCL_PREFIX}/include)

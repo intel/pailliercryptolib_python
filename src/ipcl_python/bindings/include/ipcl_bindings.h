@@ -15,9 +15,7 @@
 #include <utility>
 
 #include "include/baseconverter.h"
-#include "ipcl/ciphertext.hpp"
 #include "ipcl/keygen.hpp"
-#include "ipcl/plaintext.hpp"
 
 #ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
 #define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
