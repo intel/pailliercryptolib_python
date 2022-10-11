@@ -1,6 +1,8 @@
 // Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
+#include <pybind11/embed.h>
+
 #include <memory>
 #include <vector>
 
@@ -61,9 +63,17 @@ void def_ipclPublicKey(py::module& m) {
           "encrypt",  // encrypt plaintext
           [](const ipcl::PublicKey& self, const ipcl::PlainText& pt,
              bool make_secure) {
+            // py::scoped_interpreter g;
+            // py::gil_scoped_release release;
+
+            std::cout << "The GIL state is " << PyGILState_Check() << std::endl;
+            // PyGILState_Ensure();
             ipcl::CipherText ct = self.encrypt(pt, make_secure);
+            // py::call_guard<py::gil_scoped_acquire>();
+            // py::gil_scoped_acquire acquire;
             return ct;
           },
+          py::call_guard<py::gil_scoped_release>(),
           "encrypt ipcl::PlainText and returns ipcl::CipherText")
       .def(
           "encrypt_tolist",  // encrypt plaintext and return container of
