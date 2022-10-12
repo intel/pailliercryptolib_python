@@ -32,11 +32,10 @@ void def_ipclPlainText(pybind11::module&);
 void def_ipclCipherText(pybind11::module&);
 
 namespace ipclPythonUtils {
-std::pair<int, pybind11::list> BN2pylist(const BigNumber& bn);
-BigNumber pylist2BN(const pybind11::list& l_bn);
-BigNumber pylist2BN(int length, const pybind11::list& l_bn);
 pybind11::tuple getTupleIpclPubKey(const ipcl::PublicKey* pk);
 ipcl::PublicKey* setIpclPubKey(const pybind11::tuple& t_pk);
+BigNumber pyByte2BN(const pybind11::bytes& data);
+pybind11::bytes BN2bytes(const BigNumber& bn);
 };  // namespace ipclPythonUtils
 
 #endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_

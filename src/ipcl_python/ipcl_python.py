@@ -136,6 +136,7 @@ class PaillierPublicKey(object):
             encoding = FixedPointNumber.encode(val, self.n, self.max_int)
             enc.append(BNUtils.int2BN(encoding.encoding))
             expo.append(encoding.exponent)
+
         plaintext = ipclPlainText(enc)
         ct = self.pubkey.encrypt(plaintext, apply_obfuscator)
         return PaillierEncryptedNumber(
@@ -447,8 +448,10 @@ class PaillierEncryptedNumber(object):
                 for _ct, _expo in zip(self.ciphertextBN(), self.exponent()):
                     neg_ct.append(
                         BNUtils.int2BN(
-                            gmpy2.invert(
-                                BNUtils.BN2int(_ct), self.public_key.nsquare
+                            int(
+                                gmpy2.invert(
+                                    BNUtils.BN2int(_ct), self.public_key.nsquare
+                                )
                             )
                         )
                     )
@@ -500,8 +503,10 @@ class PaillierEncryptedNumber(object):
                     this_pt.append(BNUtils.int2BN(self.public_key.n - pt))
                     this_ct.append(
                         BNUtils.int2BN(
-                            gmpy2.invert(
-                                BNUtils.BN2int(_ct), self.public_key.nsquare
+                            int(
+                                gmpy2.invert(
+                                    BNUtils.BN2int(_ct), self.public_key.nsquare
+                                )
                             )
                         )
                     )
@@ -680,7 +685,7 @@ class PaillierEncryptedNumber(object):
                 if _x_expo > _y_expo:
                     y_factor.append(
                         BNUtils.int2BN(
-                            pow(FixedPointNumber.BASE, _x_expo - _y_expo)
+                            int(pow(FixedPointNumber.BASE, _x_expo - _y_expo))
                         )
                     )
                     y_factor_exponent.append(_x_expo - _y_expo)
@@ -691,7 +696,7 @@ class PaillierEncryptedNumber(object):
                 elif _x_expo < _y_expo:
                     x_factor.append(
                         BNUtils.int2BN(
-                            pow(FixedPointNumber.BASE, _y_expo - _x_expo)
+                            int(pow(FixedPointNumber.BASE, _y_expo - _x_expo))
                         )
                     )
                     x_factor_exponent.append(_y_expo - _x_expo)
@@ -776,6 +781,18 @@ class PaillierEncryptedNumber(object):
 class BNUtils:
     # slice first then send array
     @staticmethod
+    def int2Bytes(val: int) -> bytes:
+        val_bytes = val.to_bytes(
+            (val.bit_length() + 7) // 8, byteorder="little"
+        )
+        return val_bytes
+
+    @staticmethod
+    def bytes2Int(val: bytes) -> int:
+        val_int = int.from_bytes(val, "little")
+        return val_int
+
+    @staticmethod
     def int2BN(val: int) -> ipclBigNumber:
         """
         Convert Python integer to BigNumber
@@ -786,6 +803,7 @@ class BNUtils:
         Returns:
             BigNumber representation of val
         """
+
         if val == 0:
             return ipclBigNumber.Zero
         elif val == 1:
@@ -793,12 +811,8 @@ class BNUtils:
         elif val == 2:
             return ipclBigNumber.Two
 
-        ret = []
-        while val > 0:
-            ret.append(val & (0xFFFFFFFF))
-            val = val >> 32
-        ret_bn = ipclBigNumber(ret)
-
+        val_bytes = BNUtils.int2Bytes(val)
+        ret_bn = ipclBigNumber(val_bytes)
         return ret_bn
 
     @staticmethod
@@ -812,8 +826,5 @@ class BNUtils:
         Returns:
             Python integer representation of BigNumber
         """
-        ret = 0
-        sz, arr = val.data()
-        for i in reversed(range(sz)):
-            ret += arr[i] << (32 * i)
+        ret = BNUtils.bytes2Int(val.to_bytes())
         return ret
