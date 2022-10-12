@@ -776,6 +776,18 @@ class PaillierEncryptedNumber(object):
 class BNUtils:
     # slice first then send array
     @staticmethod
+    def int2Bytes(val: int) -> bytes:
+        val_bytes = val.to_bytes(
+            (val.bit_length() + 7) // 8, byteorder="little"
+        )
+        return val_bytes
+
+    @staticmethod
+    def bytes2Int(val: bytes) -> int:
+        val_int = int.from_bytes(val, "little")
+        return val_int
+
+    @staticmethod
     def int2BN(val: int) -> ipclBigNumber:
         """
         Convert Python integer to BigNumber
@@ -786,6 +798,7 @@ class BNUtils:
         Returns:
             BigNumber representation of val
         """
+
         if val == 0:
             return ipclBigNumber.Zero
         elif val == 1:
@@ -793,11 +806,7 @@ class BNUtils:
         elif val == 2:
             return ipclBigNumber.Two
 
-        ret = []
-        while val > 0:
-            ret.append(val & (0xFFFFFFFF))
-            val = val >> 32
-        ret_bn = ipclBigNumber(ret)
+        ret_bn = ipclBigNumber(BNUtils.int2Bytes(val))
 
         return ret_bn
 
@@ -812,8 +821,5 @@ class BNUtils:
         Returns:
             Python integer representation of BigNumber
         """
-        ret = 0
-        sz, arr = val.data()
-        for i in reversed(range(sz)):
-            ret += arr[i] << (32 * i)
+        ret = BNUtils.bytes2Int(val.to_bytes())
         return ret
