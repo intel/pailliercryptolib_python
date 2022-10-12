@@ -35,7 +35,6 @@ namespace ipclPythonUtils {
 pybind11::tuple getTupleIpclPubKey(const ipcl::PublicKey* pk);
 ipcl::PublicKey* setIpclPubKey(const pybind11::tuple& t_pk);
 BigNumber pyByte2BN(const pybind11::bytes& data);
-// BigNumber pyByte2BN(pybind11::bytes data);
 pybind11::bytes BN2bytes(const BigNumber& bn);
 };  // namespace ipclPythonUtils
 

@@ -413,12 +413,6 @@ void def_BigNumber(py::module& m) {
         return std::unique_ptr<BigNumber>(
             new BigNumber(ipclPythonUtils::pyByte2BN(data)));
       }))
-      // .def(py::init([](const py::bytearray& data) {
-      //   const py::bytes newdata = data;
-      //   return ipclPythonUtils::pyByte2BN(newdata);
-      //   // return std::unique_ptr<BigNumber>(
-      //   //     new BigNumber(ipclPythonUtils::pyByte2BN(data)));
-      // }))
       .def("__repr__",
            [](BigNumber const& self) {
              std::stringstream ss_hash;
