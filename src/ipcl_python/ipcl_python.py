@@ -136,19 +136,6 @@ class PaillierPublicKey(object):
             encoding = FixedPointNumber.encode(val, self.n, self.max_int)
             enc.append(BNUtils.int2BN(encoding.encoding))
             expo.append(encoding.exponent)
-        # print(enc, expo)
-
-        # tmp = []
-        # for pt, _expo in zip(enc, expo):
-        #     dec = FixedPointNumber(
-        #         BNUtils.BN2int(pt),
-        #         _expo,
-        #         self.n,
-        #         self.max_int,
-        #     )
-        #     tmp.append(dec.decode())
-
-        # print(tmp)
 
         plaintext = ipclPlainText(enc)
         ct = self.pubkey.encrypt(plaintext, apply_obfuscator)
@@ -824,17 +811,8 @@ class BNUtils:
         elif val == 2:
             return ipclBigNumber.Two
 
-        print("Python val - ", val)
         val_bytes = BNUtils.int2Bytes(val)
         ret_bn = ipclBigNumber(val_bytes)
-        # verify
-        tmp = BNUtils.BN2int(ret_bn)
-        if val != tmp:
-            print("mismatch!!!")
-            print(val, val_bytes)
-            print(ret_bn, tmp)
-            raise ValueError("int2BN mismatch")
-
         return ret_bn
 
     @staticmethod
