@@ -66,14 +66,27 @@ ipcl::PublicKey* setIpclPubKey(const py::tuple& t_pk) {
 }
 
 BigNumber pyByte2BN(const py::bytes& data) {
+  // BigNumber pyByte2BN(py::bytes data) {
   py::buffer_info buffer_info(py::buffer(data).request());
-  const unsigned char* chardata =
-      reinterpret_cast<const unsigned char*>(buffer_info.ptr);
-  size_t length = static_cast<size_t>(buffer_info.size);
+  // const unsigned char* chardata =
+  //     reinterpret_cast<const unsigned char*>(buffer_info.ptr);
 
-  const Ipp32u* data32 = reinterpret_cast<const Ipp32u*>(chardata);
-  size_t new_length = (length + 3) / 4;
-  BigNumber bn(data32, new_length);
+  const Ipp32u* data32 = reinterpret_cast<const Ipp32u*>(buffer_info.ptr);
+
+  size_t length = (static_cast<size_t>(buffer_info.size) + 3) >> 2;
+
+  std::vector<Ipp32u> newvec(data32, data32 + length);
+  // std::cout<<"unsigned char array"<<std::endl;
+  // for(size_t i=0; i<length; i++)
+  //   std::cout<<i<<":"<<chardata[i]<<":"<<std::endl;
+  // size_t new_length = (length+3) >> 2;//(length + 3) / 4;
+
+  std::cout << "cast to uint32 array" << std::endl;
+  for (size_t i = 0; i < length; i++)
+    std::cout << i << ":" << newvec[i] << std::endl;
+
+  BigNumber bn(newvec.data(), newvec.size());
+
   return bn;
 }
 
