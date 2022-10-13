@@ -16,12 +16,6 @@ void def_ipclPublicKey(py::module& m) {
              return ret;
            }),
            "ipclPublicKey constructor")
-      .def(py::init([](const BigNumber& n, bool enable_DJN) {
-             ipcl::PublicKey* ret = new ipcl::PublicKey(n, 1024);
-             if (enable_DJN) ret->enableDJN();
-             return ret;
-           }),
-           "ipclPublicKey constructor")
       .def(py::init([](const BigNumber& n, int bits) {
              ipcl::PublicKey* ret = new ipcl::PublicKey(n, bits);
              return ret;
