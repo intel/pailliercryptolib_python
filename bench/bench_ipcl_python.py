@@ -18,7 +18,7 @@ def BM_KeyGen(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Encrypt(state):
-    x = P - np.arange(state.range(0)) * 1024
+    x = P - np.arange(state.range(0)) * 5.1112834624
     while state:
         _ = pk.encrypt(x)
 
@@ -28,7 +28,7 @@ def BM_Encrypt(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Decrypt(state):
-    x = P - np.arange(state.range(0)) * 1024
+    x = P - np.arange(state.range(0)) * 5.1112834624
     ct_x = pk.encrypt(x)
     while state:
         _ = sk.decrypt(ct_x)
@@ -39,8 +39,8 @@ def BM_Decrypt(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Add_CTCT(state):
-    x = P - np.arange(state.range(0)) * 1024
-    y = np.arange(state.range(0)) * 1024 + Q
+    x = P - np.arange(state.range(0)) * 5.1112834624
+    y = np.arange(state.range(0)) * 1.095123872 + Q
     ct_x = pk.encrypt(x)
     ct_y = pk.encrypt(y)
     while state:
@@ -52,7 +52,7 @@ def BM_Add_CTCT(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Add_CTPT(state):
-    x = P - np.arange(state.range(0)) * 1024
+    x = P - np.arange(state.range(0)) * 5.1112834624
     ct_x = pk.encrypt(x)
     while state:
         _ = ct_x + x
@@ -63,8 +63,8 @@ def BM_Add_CTPT(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Mul_CTPT(state):
-    x = P - np.arange(state.range(0)) * 1024
-    y = np.arange(state.range(0)) * 1024 + Q
+    x = P - np.arange(state.range(0)) * 5.1112834624
+    y = np.arange(state.range(0)) * 1.095123872 + Q
 
     ct_x = pk.encrypt(x)
     while state:
