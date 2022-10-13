@@ -42,6 +42,7 @@ def BM_Add_CTCT(state):
     x = P - np.arange(state.range(0)) * 5.1112834624
     y = np.arange(state.range(0)) * 1.095123872 + Q
     ct_x = pk.encrypt(x)
+    ct_x = ct_x * x
     ct_y = pk.encrypt(y)
     while state:
         _ = ct_x + ct_y
@@ -54,6 +55,7 @@ def BM_Add_CTCT(state):
 def BM_Add_CTPT(state):
     x = P - np.arange(state.range(0)) * 5.1112834624
     ct_x = pk.encrypt(x)
+    ct_x = ct_x * x
     while state:
         _ = ct_x + x
 

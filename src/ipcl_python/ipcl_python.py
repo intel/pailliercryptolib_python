@@ -684,7 +684,7 @@ class PaillierEncryptedNumber(object):
                     ret_exponent[i] = y_expo[0]
 
             x_factored_CipherText = np.array(x_ct.getTexts())
-            y_factored_CipherText = np.array(y_ct.getTexts() * len(x_ct))
+            y_factored_CipherText = np.repeat(y_ct.getTexts(), len(x_ct))
             if not x_pass:
                 x_to_multiply_ipclCipherText = ipclCipherText(
                     self.public_key.pubkey, x_to_multiply
