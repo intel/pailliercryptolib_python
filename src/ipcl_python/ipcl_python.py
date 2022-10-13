@@ -553,12 +553,21 @@ class PaillierEncryptedNumber(object):
                 )
 
         # align self vs other (scalar)
+        import timeit
+
+        start = timeit.default_timer()
         self_ct_aligned, other_aligned, res_expo = self.__align_exponent(
             self.ciphertext(),
             self.exponent(),
             other.ciphertext(),
             other.exponent(),
         )
+        print(
+            "__align_exponent elapsed...",
+            (timeit.default_timer() - start) * 1000,
+            "ms",
+        )
+
         res_ct = self_ct_aligned + other_aligned
         return PaillierEncryptedNumber(
             self.public_key, res_ct, res_expo, self.__length
@@ -861,8 +870,7 @@ class BNUtils:
         elif val == 2:
             return ipclBigNumber.Two
 
-        val_bytes = BNUtils.int2Bytes(val)
-        ret_bn = ipclBigNumber(val_bytes)
+        ret_bn = ipclBigNumber(BNUtils.int2Bytes(val))
         return ret_bn
 
     @staticmethod
