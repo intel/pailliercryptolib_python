@@ -409,7 +409,6 @@ void def_BigNumber(py::module& m) {
            "ipclBigNumber constructor with array of integers - little endian "
            "format")
       .def(py::init([](const py::bytes& data) {
-        // return ipclPythonUtils::pyByte2BN(data);
         return std::unique_ptr<BigNumber>(
             new BigNumber(ipclPythonUtils::pyByte2BN(data)));
       }))

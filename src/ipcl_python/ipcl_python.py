@@ -578,13 +578,19 @@ class PaillierEncryptedNumber(object):
             Updated encrypted number with increased exponent
         """
 
-        x_factor = []
         x_pass = True
 
-        for x_exponent in x_expo:
+        x_to_multiply = []
+        x_factor = []
+
+        idx_to_multiply = []
+
+        for idx, x_exponent in enumerate(x_expo):
             if x_exponent >= exponent:
-                x_factor.append(BNUtils.int2BN(1))
+                pass
             else:
+                idx_to_multiply.append(idx)
+                x_to_multiply.append(x[idx])
                 x_factor.append(
                     BNUtils.int2BN(
                         pow(FixedPointNumber.BASE, exponent - x_exponent)
@@ -593,9 +599,19 @@ class PaillierEncryptedNumber(object):
                 x_pass = False
 
         if not x_pass:
+            x_to_multiply_ipclCipherText = ipclCipherText(
+                self.public_key.pubkey, x_to_multiply
+            )
             x_factor_ipclPlainText = ipclPlainText(x_factor)
-            x_ipclCipherText_factored = x * x_factor_ipclPlainText
-            return x_ipclCipherText_factored
+            print("increase_exponent_to  - before ipclCipherText multiplcation")
+            x_ipclCipherText_factored = (
+                x_to_multiply_ipclCipherText * x_factor_ipclPlainText
+            )
+
+            ret = np.array(x.getTexts())
+            ret[idx_to_multiply] = x_ipclCipherText_factored.getTexts()
+
+            return ipclCipherText(self.public_key.pubkey, ret.to_list())
 
         # No need to factor exponents
         return x
@@ -617,20 +633,29 @@ class PaillierEncryptedNumber(object):
             list of matched exponents
         """
 
+        print("__align_exponent  - func start")
+
         x_factor = []
         x_factor_exponent = []
+
+        x_to_multiply = []
+        x_idx_to_multiply = []
 
         y_factor = []
         y_factor_exponent = []
 
-        ret_exponent = []
+        y_idx_to_multiply = []
+
+        ret_exponent = list(x_expo)
 
         x_pass = True
         y_pass = True
 
         # if broadcasting
         if len(y_ct) == 1:
-            for _x_expo in x_expo:
+            print("__align_exponent  - broadcasting if start")
+
+            for i, _x_expo in enumerate(x_expo):
                 if _x_expo > y_expo[0]:
                     y_factor.append(
                         BNUtils.int2BN(
@@ -638,10 +663,8 @@ class PaillierEncryptedNumber(object):
                         )
                     )
                     y_factor_exponent.append(_x_expo - y_expo[0])
-                    x_factor.append(ipclBigNumber.One)
-                    x_factor_exponent.append(0)
+                    y_idx_to_multiply.append(i)
                     y_pass = False
-                    ret_exponent.append(_x_expo)
                 elif _x_expo < y_expo[0]:
                     x_factor.append(
                         BNUtils.int2BN(
@@ -649,39 +672,54 @@ class PaillierEncryptedNumber(object):
                         )
                     )
                     x_factor_exponent.append(y_expo[0] - _x_expo)
+                    x_idx_to_multiply.append(i)
+                    x_to_multiply.append(x_ct[i])
                     y_factor.append(ipclBigNumber.One)
                     y_factor_exponent.append(0)
                     x_pass = False
                     ret_exponent.append(y_expo[0])
-                else:
-                    x_factor.append(ipclBigNumber.One)
-                    x_factor_exponent.append(0)
-                    y_factor.append(ipclBigNumber.One)
-                    y_factor_exponent.append(0)
-                    ret_exponent.append(y_expo[0])
 
-            x_factored_CipherText, y_factored_CipherText = None, None
+            x_factored_CipherText = np.array(x_ct.getTexts())
+            y_factored_CipherText = np.array(y_ct.getTexts() * len(x_ct))
             if not x_pass:
+                x_to_multiply_ipclCipherText = ipclCipherText(
+                    self.public_key.pubkey, x_to_multiply
+                )
                 x_factor_PlainText = ipclPlainText(x_factor)
-                x_factored_CipherText = x_ct * x_factor_PlainText
-            else:
-                x_factored_CipherText = x_ct
+
+                x_factored_CipherText_tmp = (
+                    x_to_multiply_ipclCipherText * x_factor_PlainText
+                )
+                x_factored_CipherText[
+                    x_idx_to_multiply
+                ] = x_factored_CipherText_tmp.getTexts()
 
             if not y_pass:
-                y_factor_PlainText = ipclPlainText(y_factor)
-                y_factored_CipherText = (
-                    ipclCipherText(
-                        self.public_key.pubkey, y_ct.getTexts() * len(x_ct)
-                    )
-                    * y_factor_PlainText
+                y_to_multiply_ipclCipherText = ipclCipherText(
+                    self.public_key.pubkey,
+                    y_ct.getTexts() * len(y_idx_to_multiply),
                 )
+                y_factor_PlainText = ipclPlainText(y_factor)
+                y_factored_CipherText_tmp = (
+                    y_to_multiply_ipclCipherText * y_factor_PlainText
+                )
+                y_factored_CipherText[
+                    y_idx_to_multiply
+                ] = y_factored_CipherText_tmp.getTexts()
             else:
                 y_factored_CipherText = y_ct
 
-            return x_factored_CipherText, y_factored_CipherText, ret_exponent
+            return (
+                ipclCipherText(self.public_key.pubkey, x_factored_CipherText),
+                ipclCipherText(self.public_key.pubkey, y_factored_CipherText),
+                ret_exponent,
+            )
 
         else:
-            for _x_expo, _y_expo in zip(x_expo, y_expo):
+            print("__align_exponent  - default case")
+            y_to_multiply = []
+
+            for i, (_x_expo, _y_expo) in enumerate(zip(x_expo, y_expo)):
                 if _x_expo > _y_expo:
                     y_factor.append(
                         BNUtils.int2BN(
@@ -689,10 +727,9 @@ class PaillierEncryptedNumber(object):
                         )
                     )
                     y_factor_exponent.append(_x_expo - _y_expo)
-                    x_factor.append(ipclBigNumber.One)
-                    x_factor_exponent.append(0)
+                    y_idx_to_multiply.append(i)
+                    y_to_multiply.append(y_ct[i])
                     y_pass = False
-                    ret_exponent.append(_x_expo)
                 elif _x_expo < _y_expo:
                     x_factor.append(
                         BNUtils.int2BN(
@@ -700,31 +737,51 @@ class PaillierEncryptedNumber(object):
                         )
                     )
                     x_factor_exponent.append(_y_expo - _x_expo)
-                    y_factor.append(ipclBigNumber.One)
-                    y_factor_exponent.append(0)
+                    x_idx_to_multiply.append(i)
+                    x_to_multiply.append(x_ct[i])
                     x_pass = False
                     ret_exponent.append(_y_expo)
-                else:
-                    x_factor.append(ipclBigNumber.One)
-                    x_factor_exponent.append(0)
-                    y_factor.append(ipclBigNumber.One)
-                    y_factor_exponent.append(0)
-                    ret_exponent.append(_y_expo)
 
-            x_factored_CipherText, y_factored_CipherText = None, None
+            x_factored_CipherText = np.array(x_ct.getTexts())
+            y_factored_CipherText = np.array(y_ct.getTexts())
+
+            print("__align_exponent  - scan complete!")
+
+            # debug
+            for yf, ytm in zip(y_factor, y_to_multiply):
+                print(type(yf), type(ytm))
+
             if not x_pass:
+                x_to_multiply_ipclCipherText = ipclCipherText(
+                    self.public_key.pubkey, x_to_multiply
+                )
                 x_factor_PlainText = ipclPlainText(x_factor)
-                x_factored_CipherText = x_ct * x_factor_PlainText
-            else:
-                x_factored_CipherText = x_ct
+
+                x_factored_CipherText_tmp = (
+                    x_to_multiply_ipclCipherText * x_factor_PlainText
+                )
+                x_factored_CipherText[
+                    x_idx_to_multiply
+                ] = x_factored_CipherText_tmp.getTexts()
 
             if not y_pass:
+                y_to_multiply_ipclCipherText = ipclCipherText(
+                    self.public_key.pubkey, y_to_multiply
+                )
                 y_factor_PlainText = ipclPlainText(y_factor)
-                y_factored_CipherText = y_ct * y_factor_PlainText
-            else:
-                y_factored_CipherText = y_ct
+                print("__align_exponent  - y_ct")
+                y_factored_CipherText_tmp = (
+                    y_to_multiply_ipclCipherText * y_factor_PlainText
+                )
+                y_factored_CipherText[
+                    y_idx_to_multiply
+                ] = y_factored_CipherText_tmp.getTexts()
 
-            return x_factored_CipherText, y_factored_CipherText, ret_exponent
+            return (
+                ipclCipherText(self.public_key.pubkey, x_factored_CipherText),
+                ipclCipherText(self.public_key.pubkey, y_factored_CipherText),
+                ret_exponent,
+            )
 
     def length(self) -> int:
         return self.__length
