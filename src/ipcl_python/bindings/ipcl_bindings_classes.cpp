@@ -16,12 +16,6 @@ void def_ipclPublicKey(py::module& m) {
              return ret;
            }),
            "ipclPublicKey constructor")
-      .def(py::init([](const BigNumber& n, bool enable_DJN) {
-             ipcl::PublicKey* ret = new ipcl::PublicKey(n, 1024);
-             if (enable_DJN) ret->enableDJN();
-             return ret;
-           }),
-           "ipclPublicKey constructor")
       .def(py::init([](const BigNumber& n, int bits) {
              ipcl::PublicKey* ret = new ipcl::PublicKey(n, bits);
              return ret;
@@ -182,15 +176,6 @@ void def_ipclPlainText(py::module& m) {
              return ipcl::PlainText(pData);
            }),
            "ipclPlainText constructor with list of BigNumbers")
-      .def(py::init([](py::array data) {
-             py::buffer_info buffer_info = data.request();
-             size_t length = buffer_info.shape[0];
-             BigNumber* _data = static_cast<BigNumber*>(buffer_info.ptr);
-             std::vector<BigNumber> pData(_data, _data + length);
-             delete[] _data;
-             return ipcl::PlainText(pData);
-           }),
-           "ipclPlainText constructor with numpy array of BigNumbers")
       .def(py::init([](py::array_t<Ipp32u> data) {
              py::buffer_info buffer_info = data.request();
              size_t length = buffer_info.shape[0];
@@ -288,15 +273,6 @@ void def_ipclCipherText(py::module& m) {
              return ipcl::CipherText(pk, pData);
            }),
            "ipclCipherText constructor with list of BigNumbers")
-      .def(py::init([](const ipcl::PublicKey* pk, py::array data) {
-             py::buffer_info buffer_info = data.request();
-             size_t length = buffer_info.shape[0];
-             BigNumber* _data = static_cast<BigNumber*>(buffer_info.ptr);
-             std::vector<BigNumber> pData(_data, _data + length);
-             delete[] _data;
-             return ipcl::CipherText(pk, pData);
-           }),
-           "ipclCipherText constructor with numpy array of BigNumbers")
       .def(py::init([](const ipcl::PublicKey* pk, py::array_t<Ipp32u> data) {
              py::buffer_info buffer_info = data.request();
              size_t length = buffer_info.shape[0];
@@ -388,9 +364,9 @@ void def_ipclCipherText(py::module& m) {
 void def_BigNumber(py::module& m) {
   py::class_<BigNumber>(m, "ipclBigNumber")
       .def(py::init<BigNumber&>(), "ipclBigNumber constructor")
-      .def(
-          py::init([](Ipp32u obj) { return std::make_unique<BigNumber>(obj); }),
-          "ipclBigNumber constructor")
+      .def(py::init(
+               [](Ipp32u data) { return std::make_unique<BigNumber>(data); }),
+           "ipclBigNumber constructor")
       .def(py::init([](const py::list& data) {
              size_t length = data.size();
              std::vector<Ipp32u> pData = py::cast<std::vector<Ipp32u>>(data);
@@ -409,7 +385,6 @@ void def_BigNumber(py::module& m) {
            "ipclBigNumber constructor with array of integers - little endian "
            "format")
       .def(py::init([](const py::bytes& data) {
-        // return ipclPythonUtils::pyByte2BN(data);
         return std::unique_ptr<BigNumber>(
             new BigNumber(ipclPythonUtils::pyByte2BN(data)));
       }))
