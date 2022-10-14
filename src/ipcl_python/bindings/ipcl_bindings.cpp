@@ -13,7 +13,7 @@ py::tuple py_ipclKeyPair::generate_keypair(int64_t n_length, bool enable_DJN) {
 PYBIND11_MODULE(ipcl_bindings, m) {
   m.doc() = "Python wrapper for Intel ipp-crypto Paillier cryptosystem";
 
-  py::class_<ipcl::keyPair>(m, "keyPair");
+  // py::class_<ipcl::keyPair>(m, "keyPair");
 
   // PaillierKeyPair and generate_keypair pymodule
   py::class_<py_ipclKeyPair>(m, "ipclKeypair")
@@ -22,6 +22,13 @@ PYBIND11_MODULE(ipcl_bindings, m) {
         return py_ipclKeyPair::generate_keypair(n_length, enable_DJN);
       });
 
+#ifdef IPCL_PYTHON_USE_QAT
+  py::class_<py_ipclContext>(m, "ipclContext")
+      .def_static("initializeContext", &py_ipclContext::initializeContext)
+      .def_static("terminateContext", &py_ipclContext::terminateContext)
+      .def_static("isQATRunning", &py_ipclContext::isQATRunning)
+      .def_static("isQATActive", &py_ipclContext::isQATActive);
+#endif  // IPCL_PYTHON_USE_QAT
   def_ipclPublicKey(m);
   def_ipclPrivateKey(m);
   def_ipclPlainText(m);

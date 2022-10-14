@@ -63,14 +63,9 @@ void def_ipclPublicKey(py::module& m) {
           "encrypt",  // encrypt plaintext
           [](const ipcl::PublicKey& self, const ipcl::PlainText& pt,
              bool make_secure) {
-            // py::scoped_interpreter g;
-            // py::gil_scoped_release release;
-
-            std::cout << "The GIL state is " << PyGILState_Check() << std::endl;
-            // PyGILState_Ensure();
+            // ipcl::initializeContext("QAT");
             ipcl::CipherText ct = self.encrypt(pt, make_secure);
-            // py::call_guard<py::gil_scoped_acquire>();
-            // py::gil_scoped_acquire acquire;
+            // ipcl::terminateContext();
             return ct;
           },
           py::call_guard<py::gil_scoped_release>(),
@@ -80,7 +75,10 @@ void def_ipclPublicKey(py::module& m) {
                              // Ciphertext
           [](const ipcl::PublicKey& self, const ipcl::PlainText& pt,
              bool make_secure) {
+            // ipcl::initializeContext("QAT");
             ipcl::CipherText ct = self.encrypt(pt, make_secure);
+            // ipcl::terminateContext();
+
             py::list l_container = py::cast(ct.getTexts());
             return l_container;
           },
@@ -88,13 +86,17 @@ void def_ipclPublicKey(py::module& m) {
       .def("apply_obfuscator",  // ciphertext obfuscator
            [](const ipcl::PublicKey& self, const BigNumber& ct) {
              std::vector<BigNumber> ret(1, ct);
+             //  ipcl::initializeContext("QAT");
              self.applyObfuscator(ret);
+             //  ipcl::terminateContext();
              return ret[0];
            })
       .def("apply_obfuscator",  // overloaded ciphertext obfuscator
            [](const ipcl::PublicKey& self, const ipcl::CipherText& ct) {
              std::vector<BigNumber> ret = ct.getTexts();
+             //  ipcl::initializeContext("QAT");
              self.applyObfuscator(ret);
+             //  ipcl::terminateContext();
              py::list l_ret = py::cast(ret);
              return l_ret;
            })
@@ -143,14 +145,18 @@ void def_ipclPrivateKey(py::module& m) {
       .def(
           "decrypt",  // decrypt ipcl::CipherText
           [](ipcl::PrivateKey& self, const ipcl::CipherText& ct) {
+            // ipcl::initializeContext("QAT");
             ipcl::PlainText pt = self.decrypt(ct);
+            // ipcl::terminateContext();
             return pt;
           },
           "decrypt ipcl::CipherText into ipcl::PlainText")
       .def(
           "decrypt_tolist",  // decrypt ipcl::CipherText and return container
           [](ipcl::PrivateKey& self, const ipcl::CipherText& ct) {
+            // ipcl::initializeContext("QAT");
             ipcl::PlainText pt = self.decrypt(ct);
+            // ipcl::terminateContext();
             py::list l_container = py::cast(pt.getTexts());
             return l_container;
           },

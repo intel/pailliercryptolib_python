@@ -9,6 +9,7 @@ from .bindings.ipcl_bindings import (
     ipclPlainText,
     ipclCipherText,
     ipclBigNumber,
+    ipclContext,
 )
 import numpy as np
 import gmpy2
@@ -98,8 +99,10 @@ class PaillierPublicKey(object):
 
     def apply_obfuscator(self, x: Union[int, ipclBigNumber]):
         # apply_obfuscator function is embedded in encrypt
+        ipclContext.initializeContext("QAT")
         if isinstance(x, int):
             return self.pubkey.apply_obfuscator(BNUtils.int2BN(x))
+        ipclContext.terminateContext()
         return self.pubkey.apply_obfuscator(x)
 
     def raw_encrypt(
@@ -138,6 +141,7 @@ class PaillierPublicKey(object):
             expo.append(encoding.exponent)
         plaintext = ipclPlainText(enc)
         ct = self.pubkey.encrypt(plaintext, apply_obfuscator)
+
         return PaillierEncryptedNumber(
             self, ct, exponents=expo, length=len(value)
         )

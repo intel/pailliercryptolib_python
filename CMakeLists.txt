@@ -45,6 +45,7 @@ option(IPCL_PYTHON_ENABLE_QAT "Use QAT for IPCL backend" OFF)
 if(IPCL_PYTHON_ENABLE_QAT)
   # disables OMP when QAT is enabled - will be removed later
   set(IPCL_PYTHON_ENABLE_OMP OFF)
+  add_compile_definitions(IPCL_PYTHON_USE_QAT)
 endif()
 
 if(IPCL_PYTHON_ENABLE_OMP)

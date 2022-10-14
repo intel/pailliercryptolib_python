@@ -12,10 +12,15 @@
 #include <functional>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <utility>
 
 #include "include/baseconverter.h"
-#include "ipcl/keygen.hpp"
+#include "ipcl/ipcl.hpp"
+
+#ifdef IPCL_PYTHON_USE_QAT
+#include "ipcl/context.hpp"
+#endif  // IPCL_PYTHON_USE_QAT
 
 #ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
 #define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
@@ -25,6 +30,18 @@ class py_ipclKeyPair {
                                           bool enable_DJN = true);
 };
 
+#ifdef IPCL_PYTHON_USE_QAT
+class py_ipclContext {
+ public:
+  static bool initializeContext(std::string runtime_choice) {
+    return ipcl::initializeContext(runtime_choice);
+  }
+  static bool terminateContext() { return ipcl::terminateContext(); }
+  static bool isQATRunning() { return ipcl::isQATRunning(); }
+  static bool isQATActive() { return ipcl::isQATActive(); }
+};
+void def_ipclQATControl(pybind11::module&);
+#endif  // IPCL_PYTHON_USE_QAT
 void def_ipclPublicKey(pybind11::module&);
 void def_ipclPrivateKey(pybind11::module&);
 void def_BigNumber(pybind11::module&);
