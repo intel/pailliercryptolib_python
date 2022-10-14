@@ -364,9 +364,9 @@ void def_ipclCipherText(py::module& m) {
 void def_BigNumber(py::module& m) {
   py::class_<BigNumber>(m, "ipclBigNumber")
       .def(py::init<BigNumber&>(), "ipclBigNumber constructor")
-      .def(
-          py::init([](Ipp32u obj) { return std::make_unique<BigNumber>(obj); }),
-          "ipclBigNumber constructor")
+      .def(py::init(
+               [](Ipp32u data) { return std::make_unique<BigNumber>(data); }),
+           "ipclBigNumber constructor")
       .def(py::init([](const py::list& data) {
              size_t length = data.size();
              std::vector<Ipp32u> pData = py::cast<std::vector<Ipp32u>>(data);
