@@ -37,38 +37,18 @@ PYBIND11_MODULE(ipcl_bindings, m) {
 }
 
 namespace ipclPythonUtils {
-std::pair<int, py::list> BN2pylist(const BigNumber& bn) {
-  int bnBitLen;
-  Ipp32u* bnData;
-  ippsRef_BN(nullptr, &bnBitLen, &bnData, bn);
-  size_t length = BITSIZE_WORD(bnBitLen);
-  std::vector<Ipp32u> tmp(bnData, bnData + length);
-  py::list l_dt = py::cast(tmp);
-  return std::make_pair(length, l_dt);
-}
-
-BigNumber pylist2BN(const py::list& l_bn) {
-  std::vector<Ipp32u> bnData = py::cast<std::vector<Ipp32u>>(l_bn);
-  return BigNumber(bnData.data(), bnData.size());
-}
-
-BigNumber pylist2BN(size_t length, const py::list& l_bn) {
-  std::vector<Ipp32u> bnData = py::cast<std::vector<Ipp32u>>(l_bn);
-  return BigNumber(bnData.data(), length);
-}
-
 py::tuple getTupleIpclPubKey(const ipcl::PublicKey* pk) {
   py::tuple ret;
   int pk_length = pk->getBits();
   bool isDJN = pk->isDJN();
   if (isDJN) {  // DJN scheme
-    auto l_n = BN2pylist(pk->getN());
-    auto l_hs = BN2pylist(pk->getHS());
+    auto l_n = BN2bytes(pk->getN());
+    auto l_hs = BN2bytes(pk->getHS());
     int randbits = pk->getRandBits();
-    ret = py::make_tuple(1, l_n.second, pk_length, l_hs.second, randbits);
+    ret = py::make_tuple(1, l_n, pk_length, l_hs, randbits);
   } else {  // Paillier scheme
-    auto l_n = BN2pylist(pk->getN());
-    ret = py::make_tuple(0, l_n.second, pk_length, 0, 0);
+    auto l_n = BN2bytes(pk->getN());
+    ret = py::make_tuple(0, l_n, pk_length, 0, 0);
   }
   return ret;
 }
@@ -76,19 +56,51 @@ py::tuple getTupleIpclPubKey(const ipcl::PublicKey* pk) {
 ipcl::PublicKey* setIpclPubKey(const py::tuple& t_pk) {
   ipcl::PublicKey* ret;
   int scheme = py::cast<int>(t_pk[0]);
-  py::list l_n = t_pk[1];
-  BigNumber n = pylist2BN(l_n);
+  py::bytes l_n = t_pk[1];
+  BigNumber n = pyByte2BN(l_n);
   int pk_length = py::cast<int>(t_pk[2]);
 
   if (scheme == 0) {  // Paillier scheme
     ret = new ipcl::PublicKey(n, pk_length);
   } else {  // DJN scheme
-    py::list l_hs = t_pk[3];
-    BigNumber hs = pylist2BN(l_hs);
+    py::bytes l_hs = t_pk[3];
+    BigNumber hs = pyByte2BN(l_hs);
     int randbits = py::cast<int>(t_pk[4]);
     ret = new ipcl::PublicKey(n, pk_length);
     ret->setDJN(hs, randbits);
   }
   return ret;
 }
+
+BigNumber pyByte2BN(const py::bytes& data) {
+  py::buffer_info buffer_info(py::buffer(data).request());
+  unsigned char* chardata = reinterpret_cast<unsigned char*>(buffer_info.ptr);
+  size_t length = static_cast<size_t>(buffer_info.size);
+
+  size_t new_length = (length + 3) >> 2;
+  Ipp32u* data32 = reinterpret_cast<Ipp32u*>(chardata);
+
+  // check MSB if length % 4 != 0
+  size_t rmdr = length & 3;
+  if (rmdr) {  // length % 4 != 0
+    size_t st = length - rmdr;
+    Ipp32u tmp = chardata[st] & 0xFF;
+    for (size_t j = 1; j < rmdr; ++j)
+      tmp += (chardata[j + st] & 0xFF) << (8 * j);
+    *(data32 + new_length - 1) = tmp;
+  }
+
+  return BigNumber(data32, new_length);
+}
+
+py::bytes BN2bytes(const BigNumber& bn) {
+  int bnBitLen;
+  Ipp32u* bnData = nullptr;
+  ippsRef_BN(nullptr, &bnBitLen, &bnData, bn);
+  int length = BITSIZE_WORD(bnBitLen) * 4;
+  unsigned char* bytesData = reinterpret_cast<unsigned char*>(bnData);
+  std::string str(reinterpret_cast<char*>(bytesData), length);
+  return py::bytes(str);
+}
+
 };  // namespace ipclPythonUtils

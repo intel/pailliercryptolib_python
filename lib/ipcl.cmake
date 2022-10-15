@@ -3,7 +3,6 @@
 
 include(ExternalProject)
 include(GNUInstallDirs)
-
 MESSAGE(STATUS "Configuring Intel Paillier Cryptosystem Library")
 set(IPCL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ext_ipcl)
 set(IPCL_GIT_REPO_URL https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib.git)
@@ -11,7 +10,6 @@ set(IPCL_GIT_LABEL qat_integration)
 set(IPCL_SRC_DIR ${IPCL_PREFIX}/src/ext_ipcl/)
 
 set(IPCL_CXX_FLAGS "${IPCL_PYTHON_FORWARD_CMAKE_ARGS}")
-set(IPCL_DEBUG_MODE ON)
 
 if(IPCL_DEBUG_MODE)
   set(IPCL_BUILD_TYPE Debug)
@@ -43,10 +41,10 @@ add_library(libipcl INTERFACE)
 add_dependencies(libipcl ext_ipcl)
 
 if(IPCL_DEBUG_MODE)
-target_link_libraries(libipcl INTERFACE
-${IPCL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libipcl_debug.a)
+  target_link_libraries(libipcl INTERFACE
+    ${IPCL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libipcl_debug.a)
 else()
   target_link_libraries(libipcl INTERFACE
-        ${IPCL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libipcl.a)
+    ${IPCL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libipcl.a)
 endif()
 target_include_directories(libipcl INTERFACE ${IPCL_PREFIX}/include)
