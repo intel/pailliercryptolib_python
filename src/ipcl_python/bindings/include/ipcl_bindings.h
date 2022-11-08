@@ -46,6 +46,7 @@ class py_ipclHybridControl {
   static void setHybridOff() { ipcl::setHybridOff(); }
   static ipcl::HybridMode getHybridMode() { return ipcl::getHybridMode(); }
 };
+
 #endif  // IPCL_PYTHON_USE_QAT
 void def_ipclPublicKey(pybind11::module&);
 void def_ipclPrivateKey(pybind11::module&);
