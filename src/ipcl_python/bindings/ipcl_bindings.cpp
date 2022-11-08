@@ -102,5 +102,4 @@ py::bytes BN2bytes(const BigNumber& bn) {
   std::string str(reinterpret_cast<char*>(bytesData), length);
   return py::bytes(str);
 }
-
 };  // namespace ipclPythonUtils
