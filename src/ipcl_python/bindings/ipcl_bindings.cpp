@@ -13,6 +13,7 @@ py::tuple py_ipclKeyPair::generate_keypair(int64_t n_length, bool enable_DJN) {
 }
 
 void py_ipclHybridControl::setHybridMode(ipcl::HybridMode mode) {
+  // TODO(skmono): Debugging - cannot set hybrid mode
   std::cout << "Current mode = " << int(ipcl::getHybridMode()) << std::endl;
   std::cout << " input : " << int(mode) << std::endl;
   ipcl::setHybridMode(mode);
