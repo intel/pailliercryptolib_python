@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "ipcl/bignum.h"
+#include "ipcl/ipcl.hpp"
 
 #ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_H_
 #define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_H_

@@ -47,8 +47,9 @@ class CMakeBuild(build_ext):
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
             "-DPYTHON_EXECUTABLE=" + sys.executable,
-            "-DIPCL_PYTHON_ENABLE_OMP=OFF",
             "-DIPCL_PYTHON_ENABLE_QAT=ON",
+            "-DIPCL_PYTHON_DETECT_CPU_RUNTIME=ON",
+            "-DIPCL_PYTHON_ENABLE_OMP=OFF",
         ]
 
         cfg = "Debug" if self.debug else "Release"

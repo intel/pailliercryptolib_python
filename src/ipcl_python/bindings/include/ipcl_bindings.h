@@ -1,9 +1,9 @@
 // Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#include <ippcp.h>
-#include <ippcpdefs.h>
-#include <ippversion.h>
+// #include "ipcl/ippcrypto/ippcp.h"
+// #include "ipcl/ippcrypto/ippcpdefs.h"
+// #include <ippversion.h>
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -15,7 +15,6 @@
 #include <string>
 #include <utility>
 
-#include "include/baseconverter.h"
 #include "ipcl/ipcl.hpp"
 
 #ifdef IPCL_PYTHON_USE_QAT
@@ -40,7 +39,13 @@ class py_ipclContext {
   static bool isQATRunning() { return ipcl::isQATRunning(); }
   static bool isQATActive() { return ipcl::isQATActive(); }
 };
-void def_ipclQATControl(pybind11::module&);
+
+class py_ipclHybridControl {
+ public:
+  static void setHybridMode(ipcl::HybridMode mode);
+  static void setHybridOff() { ipcl::setHybridOff(); }
+  static ipcl::HybridMode getHybridMode() { return ipcl::getHybridMode(); }
+};
 #endif  // IPCL_PYTHON_USE_QAT
 void def_ipclPublicKey(pybind11::module&);
 void def_ipclPrivateKey(pybind11::module&);

@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "include/baseconverter.h"
 #include "include/ipcl_bindings.h"
 
 namespace py = pybind11;

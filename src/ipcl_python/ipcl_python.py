@@ -9,12 +9,10 @@ from .bindings.ipcl_bindings import (
     ipclPlainText,
     ipclCipherText,
     ipclBigNumber,
-    ipclContext,
 )
 import numpy as np
 import gmpy2
 from typing import Union, Optional, Tuple
-import os
 
 
 class PaillierKeypair(object):
@@ -38,12 +36,6 @@ class PaillierKeypair(object):
             (PaillierPublicKey, PaillierPrivateKey): Tuple of public and
                                                      private key
         """
-
-        if os.environ["ENABLE_QAT"]:
-            ipclContext.initializeContext("QAT")
-
-        if ipclContext.isQATActive():
-            print("using QAT")
 
         keys = ipclKeypair.generate_keypair(n_length, enable_DJN)
         pub = PaillierPublicKey(keys[0])

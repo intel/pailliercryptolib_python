@@ -39,18 +39,17 @@ set(CMAKE_CXX_FLAGS "-O2 -fpermissive -Wno-as-needed")
 option(IPCL_PYTHON_TEST "Enable testing" ON)
 option(IPCL_PYTHON_DOCS "Enable document building" OFF)
 option(IPCL_PYTHON_ENABLE_OMP "Use OpenMP for IPCL backend" OFF)
-option(IPCL_PYTHON_DETECT_IFMA_RUNTIME "Use AVX512IFMA runtime detection" OFF)
+option(IPCL_PYTHON_DETECT_CPU_RUNTIME "Use CPU runtime detection" OFF)
 option(IPCL_PYTHON_ENABLE_QAT "Use QAT for IPCL backend" OFF)
 
+# Set IPCL flags
 if(IPCL_PYTHON_ENABLE_QAT)
-  # disables OMP when QAT is enabled - will be removed later
-  set(IPCL_PYTHON_ENABLE_OMP OFF)
   add_compile_definitions(IPCL_PYTHON_USE_QAT)
 endif()
 
 if(IPCL_PYTHON_ENABLE_OMP)
   find_package(OpenMP)
-  if(NOT OpenMP)
+  if(NOT OpenMP_FOUND)
     set(IPCL_PYTHON_ENABLE_OMP OFF)
     message(STATUS "OpenMP not found - disabling for build")
   endif()
@@ -61,7 +60,7 @@ message(STATUS "CMAKE_C_COMPILER:                 ${CMAKE_C_COMPILER}")
 message(STATUS "CMAKE_CXX_COMPILER:               ${CMAKE_CXX_COMPILER}")
 message(STATUS "IPCL_PYTHON_TEST:                 ${IPCL_PYTHON_TEST}")
 message(STATUS "IPCL_PYTHON_DOCS:                 ${IPCL_PYTHON_DOCS}")
-message(STATUS "IPCL_PYTHON_DETECT_IFMA_RUNTIME:  ${IPCL_PYTHON_DETECT_IFMA_RUNTIME}")
+message(STATUS "IPCL_PYTHON_DETECT_CPU_RUNTIME:   ${IPCL_PYTHON_DETECT_CPU_RUNTIME}")
 message(STATUS "IPCL_PYTHON_ENABLE_OMP:           ${IPCL_PYTHON_ENABLE_OMP}")
 message(STATUS "IPCL_PYTHON_ENABLE_QAT:           ${IPCL_PYTHON_ENABLE_QAT}")
 
@@ -77,14 +76,11 @@ set(IPCL_PYTHON_FORWARD_CMAKE_ARGS
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
 )
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(IPCL_DEBUG_MODE ON)
-endif()
-
 set(IPCL_BINDINGS_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/ipcl_python/bindings)
 set(IPCL_BINDINGS_INC_DIR ${IPCL_BINDINGS_SRC_DIR}/include)
 set(IPCL_BINDINGS_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})
 message(STATUS "IPCL_BINDINGS_SRCS_DIR : ${IPCL_BINDINGS_SRC_DIR}")
+
 include(lib/ipcl.cmake)
 include(lib/pybind11.cmake)
 
@@ -101,11 +97,8 @@ ${IPCL_BINDINGS_SRC_DIR}/ipcl_bindings_classes.cpp)
 pybind11_add_module(ipcl_bindings ${IPCL_BINDINGS_SRCS})
 
 target_include_directories(ipcl_bindings PUBLIC ${PYTHON_INCLUDE_DIRS} ${IPCL_BINDINGS_INC_DIR} ${IPCL_BINDINGS_SRC_DIR})
-target_link_libraries(ipcl_bindings PUBLIC libipcl OpenSSL::SSL OpenSSL::Crypto Threads::Threads -lnuma)
+target_link_libraries(ipcl_bindings PUBLIC IPCL::ipcl OpenSSL::SSL OpenSSL::Crypto Threads::Threads -lnuma)
 
-if(IPCL_PYTHON_ENABLE_QAT)
-  target_link_libraries(ipcl_bindings PUBLIC udev z)
-endif()
 
 if(IPCL_PYTHON_ENABLE_OMP)
   find_package(OpenMP REQUIRED)
