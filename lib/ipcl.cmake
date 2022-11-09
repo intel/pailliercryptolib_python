@@ -23,9 +23,10 @@ if(IPCL_PYTHON_ENABLE_OMP)
   endif()
 endif()
 
-set(IPCL_SHARED OFF)
+set(IPCL_SHARED ON)
 set(IPCL_TEST OFF)
 set(IPCL_BENCHMARK OFF)
+set(IPCL_INTERNAL_PYTHON_BUILD ON)
 
 FetchContent_Declare(
   ipcl

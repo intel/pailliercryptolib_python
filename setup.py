@@ -12,6 +12,7 @@ import subprocess
 from distutils.version import LooseVersion
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
+from pathlib import Path
 
 
 class CMakeExtension(Extension):
@@ -41,11 +42,14 @@ class CMakeBuild(build_ext):
             self.build_extension(ext)
 
     def build_extension(self, ext):
-        extdir = os.path.abspath(
-            os.path.dirname(self.get_ext_fullpath(ext.name))
-        )
+
+        ext_fullpath = Path.cwd() / self.get_ext_fullpath(ext.name)
+        extdir = ext_fullpath.parent.resolve()
+
         cmake_args = [
-            "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_CXX_COMPILER=clang++",
+            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}{os.sep}",
             "-DPYTHON_EXECUTABLE=" + sys.executable,
             "-DIPCL_PYTHON_ENABLE_QAT=ON",
             "-DIPCL_PYTHON_DETECT_CPU_RUNTIME=ON",
@@ -92,7 +96,7 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     ext_modules=[CMakeExtension("ipcl_python/bindings/ipcl_bindings")],
-    cmdclass=dict(build_ext=CMakeBuild),
+    cmdclass={"build_ext": CMakeBuild},
     test_suite="tests",
     license="Apache-2.0",
     classifiers=[

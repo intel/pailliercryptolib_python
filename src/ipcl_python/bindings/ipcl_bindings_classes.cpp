@@ -266,8 +266,6 @@ void def_ipclCipherText(py::module& m) {
            "ipclCipherText constructor")
       .def(py::init<const ipcl::PublicKey*, const BigNumber&>(),
            "ipclCipherText constructor")
-      .def(py::init<const ipcl::PublicKey*, const ipcl::PlainText&>(),
-           "ipclCipherText constructor")
       .def(py::init([](const ipcl::PublicKey* pk, py::list data) {
              std::vector<BigNumber> pData =
                  py::cast<std::vector<BigNumber>>(data);

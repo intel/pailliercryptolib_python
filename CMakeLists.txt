@@ -64,6 +64,7 @@ message(STATUS "IPCL_PYTHON_DETECT_CPU_RUNTIME:   ${IPCL_PYTHON_DETECT_CPU_RUNTI
 message(STATUS "IPCL_PYTHON_ENABLE_OMP:           ${IPCL_PYTHON_ENABLE_OMP}")
 message(STATUS "IPCL_PYTHON_ENABLE_QAT:           ${IPCL_PYTHON_ENABLE_QAT}")
 
+
 set(IPCL_PYTHON_FORWARD_CMAKE_ARGS
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -79,7 +80,7 @@ set(IPCL_PYTHON_FORWARD_CMAKE_ARGS
 set(IPCL_BINDINGS_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/ipcl_python/bindings)
 set(IPCL_BINDINGS_INC_DIR ${IPCL_BINDINGS_SRC_DIR}/include)
 set(IPCL_BINDINGS_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})
-message(STATUS "IPCL_BINDINGS_SRCS_DIR : ${IPCL_BINDINGS_SRC_DIR}")
+message(STATUS "IPCL_BINDINGS_SRCS_DIR:           ${IPCL_BINDINGS_SRC_DIR}")
 
 include(lib/ipcl.cmake)
 include(lib/pybind11.cmake)
@@ -99,6 +100,9 @@ pybind11_add_module(ipcl_bindings ${IPCL_BINDINGS_SRCS})
 target_include_directories(ipcl_bindings PUBLIC ${PYTHON_INCLUDE_DIRS} ${IPCL_BINDINGS_INC_DIR} ${IPCL_BINDINGS_SRC_DIR})
 target_link_libraries(ipcl_bindings PUBLIC IPCL::ipcl OpenSSL::SSL OpenSSL::Crypto Threads::Threads -lnuma)
 
+set_target_properties(ipcl_bindings PROPERTIES
+BUILD_WITH_INSTALL_RPATH FALSE
+LINK_FLAGS "-Wl,-rpath,'$ORIGIN' -Wl,-rpath,'$ORIGIN'/ippcrypto -Wl,-rpath,'$ORIGIN'/cpufeatures")
 
 if(IPCL_PYTHON_ENABLE_OMP)
   find_package(OpenMP REQUIRED)
