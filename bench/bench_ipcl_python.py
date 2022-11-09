@@ -1,6 +1,7 @@
 import numpy as np
 from ipcl_python import PaillierKeypair
 import ipcl_python as ipcl
+from ipcl_python import context
 import google_benchmark as benchmark
 
 
@@ -91,7 +92,10 @@ if __name__ == "__main__":
     )
     N = P * Q
 
+    context.initializeContext("QAT")
+
     pk = ipcl.PaillierPublicKey(N, N.bit_length(), True)
     sk = ipcl.PaillierPrivateKey(pk, P, Q)
 
     benchmark.main()
+    context.terminateContext()

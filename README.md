@@ -53,20 +53,35 @@ cmake >=3.15.1
 git
 pthread
 g++ >= 7.0 or clang >= 10.0
-python >= 3.6.9
-pip>=22.0.1
 ```
 
 The following libraries and tools are also required,
 ```
-nasm >= 2.15
+python >= 3.6.9
+pip >= 22.0.1
 OpenSSL >= 1.1.0
 numa >= 2.0.12
 gmp >= 5.0.0
 mpfr >= 3.1.0
+mpc >= 1.1.0
 ```
 
-For additional dependencies regarding the C++ backend, refer to the [Intel Paillier Cryptosystem Library](https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib).
+which can be installed by:
+```bash
+# Ubuntu 20.04 or higher
+$ sudo apt install python3-dev python3-pip libssl-dev libnuma-dev libgmp-dev libmpfr-dev libmpc-dev
+
+# Fedora (RHEL 8, CentOS 8)
+$ sudo dnf install python3-devel python3-pip openssl-devel numactl-devel gmp-devel mpfr-devel libmpc-devel
+```
+
+The following is also required
+```
+nasm >= 2.15
+```
+For Ubuntu 20.04 or lower and RHEL/CentOS, please refer to the [Netwide Assembler webpage](https://nasm.us/) for download and installation details.
+
+For more details regarding the C++ backend, refer to the [Intel Paillier Cryptosystem Library](https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib).
 
 ### Installation
 Compiling and installing the package can be done by:

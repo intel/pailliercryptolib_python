@@ -47,8 +47,6 @@ class CMakeBuild(build_ext):
         extdir = ext_fullpath.parent.resolve()
 
         cmake_args = [
-            "-DCMAKE_C_COMPILER=clang",
-            "-DCMAKE_CXX_COMPILER=clang++",
             f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}{os.sep}",
             "-DPYTHON_EXECUTABLE=" + sys.executable,
             "-DIPCL_PYTHON_ENABLE_QAT=ON",

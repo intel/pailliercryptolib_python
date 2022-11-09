@@ -15,11 +15,8 @@
 #include <string>
 #include <utility>
 
-#include "ipcl/ipcl.hpp"
-
-#ifdef IPCL_PYTHON_USE_QAT
 #include "ipcl/context.hpp"
-#endif  // IPCL_PYTHON_USE_QAT
+#include "ipcl/ipcl.hpp"
 
 #ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
 #define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
@@ -29,7 +26,6 @@ class py_ipclKeyPair {
                                           bool enable_DJN = true);
 };
 
-#ifdef IPCL_PYTHON_USE_QAT
 class py_ipclContext {
  public:
   static bool initializeContext(std::string runtime_choice) {
@@ -47,7 +43,6 @@ class py_ipclHybridControl {
   static ipcl::HybridMode getHybridMode() { return ipcl::getHybridMode(); }
 };
 
-#endif  // IPCL_PYTHON_USE_QAT
 void def_ipclPublicKey(pybind11::module&);
 void def_ipclPrivateKey(pybind11::module&);
 void def_BigNumber(pybind11::module&);

@@ -13,11 +13,7 @@ py::tuple py_ipclKeyPair::generate_keypair(int64_t n_length, bool enable_DJN) {
 }
 
 void py_ipclHybridControl::setHybridMode(ipcl::HybridMode mode) {
-  // TODO(skmono): Debugging - cannot set hybrid mode
-  std::cout << "Current mode = " << int(ipcl::getHybridMode()) << std::endl;
-  std::cout << " input : " << int(mode) << std::endl;
   ipcl::setHybridMode(mode);
-  std::cout << "    New mode = " << int(ipcl::getHybridMode()) << std::endl;
 }
 
 PYBIND11_MODULE(ipcl_bindings, m) {
@@ -32,7 +28,6 @@ PYBIND11_MODULE(ipcl_bindings, m) {
         return py_ipclKeyPair::generate_keypair(n_length, enable_DJN);
       });
 
-#ifdef IPCL_PYTHON_USE_QAT
   py::class_<py_ipclContext>(m, "context")
       .def_static("initializeContext", &py_ipclContext::initializeContext)
       .def_static("terminateContext", &py_ipclContext::terminateContext)
@@ -60,7 +55,6 @@ PYBIND11_MODULE(ipcl_bindings, m) {
       .def_static("setHybridOff", &py_ipclHybridControl::setHybridOff)
       .def_static("getHybridMode", &py_ipclHybridControl::getHybridMode);
 
-#endif  // IPCL_PYTHON_USE_QAT
   def_ipclPublicKey(m);
   def_ipclPrivateKey(m);
   def_ipclPlainText(m);
