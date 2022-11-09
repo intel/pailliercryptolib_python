@@ -214,6 +214,7 @@ def test_hybridMode(sz=64):
 
 
 if __name__ == "__main__":
+    print("====== IPCL-Python examples ======")
     # generate Paillier scheme key pair
     pk, sk = PaillierKeypair.generate_keypair(2048)
 
