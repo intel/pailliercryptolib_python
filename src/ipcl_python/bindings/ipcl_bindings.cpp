@@ -1,7 +1,7 @@
 // Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#include "include/ipcl_bindings.h"
+#include "include/ipcl_bindings.hpp"
 
 #include <iostream>
 

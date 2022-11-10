@@ -1,9 +1,6 @@
 // Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-// #include "ipcl/ippcrypto/ippcp.h"
-// #include "ipcl/ippcrypto/ippcpdefs.h"
-// #include <ippversion.h>
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -18,8 +15,8 @@
 #include "ipcl/context.hpp"
 #include "ipcl/ipcl.hpp"
 
-#ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
-#define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
+#ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_HPP_
+#define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_HPP_
 class py_ipclKeyPair {
  public:
   static pybind11::tuple generate_keypair(int64_t n_length = 1024,
@@ -56,4 +53,4 @@ BigNumber pyByte2BN(const pybind11::bytes& data);
 pybind11::bytes BN2bytes(const BigNumber& bn);
 };  // namespace ipclPythonUtils
 
-#endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_H_
+#endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_HPP_

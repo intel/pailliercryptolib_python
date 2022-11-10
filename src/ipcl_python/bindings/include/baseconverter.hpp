@@ -5,8 +5,8 @@
 
 #include "ipcl/ipcl.hpp"
 
-#ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_H_
-#define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_H_
+#ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_HPP_
+#define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_HPP_
 
 namespace baseconverter {
 std::string hex2dec(std::string val);
@@ -21,4 +21,4 @@ unsigned int getdec(const std::string& baseSet, const std::string& val);
 std::string BN2dec(const BigNumber& bn);
 };  // namespace baseconverter
 
-#endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_H_
+#endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_BASECONVERTER_HPP_

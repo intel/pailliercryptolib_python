@@ -1,11 +1,10 @@
 # Copyright (C) 2021 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-# include(ExternalProject)
 include(FetchContent)
 MESSAGE(STATUS "Configuring Intel Paillier Cryptosystem Library")
-set(IPCL_GIT_REPO_URL git@github.com:intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib.git)
-set(IPCL_GIT_LABEL qat_integration)
+set(IPCL_GIT_REPO_URL https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib.git)
+set(IPCL_GIT_LABEL development)
 
 # set IPCL flags
 if(IPCL_PYTHON_ENABLE_QAT)
