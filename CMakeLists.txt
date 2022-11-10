@@ -87,10 +87,6 @@ include(lib/pybind11.cmake)
 
 FetchContent_GetProperties(pybind11)
 
-set(CMAKE_THREAD_PREFER_PTHREAD ON)
-find_package(OpenSSL REQUIRED)
-find_package(Threads REQUIRED)
-
 set(IPCL_BINDINGS_SRCS ${IPCL_BINDINGS_SRC_DIR}/ipcl_bindings.cpp
 ${IPCL_BINDINGS_SRC_DIR}/baseconverter.cpp
 ${IPCL_BINDINGS_SRC_DIR}/ipcl_bindings_classes.cpp)
@@ -98,11 +94,12 @@ ${IPCL_BINDINGS_SRC_DIR}/ipcl_bindings_classes.cpp)
 pybind11_add_module(ipcl_bindings ${IPCL_BINDINGS_SRCS})
 
 target_include_directories(ipcl_bindings PUBLIC ${PYTHON_INCLUDE_DIRS} ${IPCL_BINDINGS_INC_DIR} ${IPCL_BINDINGS_SRC_DIR})
-target_link_libraries(ipcl_bindings PUBLIC IPCL::ipcl OpenSSL::SSL OpenSSL::Crypto Threads::Threads -lnuma)
+target_link_libraries(ipcl_bindings PUBLIC IPCL::ipcl)
 
 set_target_properties(ipcl_bindings PROPERTIES
-BUILD_WITH_INSTALL_RPATH FALSE
-LINK_FLAGS "-Wl,-rpath,'$ORIGIN' -Wl,-rpath,'$ORIGIN'/ippcrypto -Wl,-rpath,'$ORIGIN'/cpufeatures")
+  BUILD_WITH_INSTALL_RPATH FALSE
+  LINK_FLAGS "-Wl,-rpath,'$ORIGIN' -Wl,-rpath,'$ORIGIN'/ippcrypto -Wl,-rpath,'$ORIGIN'/cpufeatures"
+)
 
 if(IPCL_PYTHON_ENABLE_OMP)
   find_package(OpenMP REQUIRED)
