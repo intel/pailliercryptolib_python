@@ -19,8 +19,6 @@ void py_ipclHybridControl::setHybridMode(ipcl::HybridMode mode) {
 PYBIND11_MODULE(ipcl_bindings, m) {
   m.doc() = "Python wrapper for Intel ipp-crypto Paillier cryptosystem";
 
-  // py::class_<ipcl::keyPair>(m, "keyPair");
-
   // PaillierKeyPair and generate_keypair pymodule
   py::class_<py_ipclKeyPair>(m, "ipclKeypair")
       .def_static("generate_keypair", &py_ipclKeyPair::generate_keypair)
