@@ -11,7 +11,11 @@ import subprocess
 
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
+<<<<<<< HEAD
 from distutils.version import LooseVersion
+=======
+from pathlib import Path
+>>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
 
 
 class CMakeExtension(Extension):
@@ -41,13 +45,16 @@ class CMakeBuild(build_ext):
             self.build_extension(ext)
 
     def build_extension(self, ext):
-        extdir = os.path.abspath(
-            os.path.dirname(self.get_ext_fullpath(ext.name))
-        )
+
+        ext_fullpath = Path.cwd() / self.get_ext_fullpath(ext.name)
+        extdir = ext_fullpath.parent.resolve()
+
         cmake_args = [
-            "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
+            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}{os.sep}",
             "-DPYTHON_EXECUTABLE=" + sys.executable,
-            "-DIPCL_PYTHON_ENABLE_OMP=ON",
+            "-DIPCL_PYTHON_ENABLE_QAT=ON",
+            "-DIPCL_PYTHON_DETECT_CPU_RUNTIME=ON",
+            "-DIPCL_PYTHON_ENABLE_OMP=OFF",
         ]
 
         cfg = "Debug" if self.debug else "Release"
@@ -82,7 +89,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="ipcl-python",
-    version="1.1.4",
+    version="2.0.0",
     author="Sejun Kim",
     author_email="sejun.kim@intel.com",
     description="Python wrapper for Intel Paillier Cryptosystem Library",
@@ -90,7 +97,7 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     ext_modules=[CMakeExtension("ipcl_python/bindings/ipcl_bindings")],
-    cmdclass=dict(build_ext=CMakeBuild),
+    cmdclass={"build_ext": CMakeBuild},
     test_suite="tests",
     license="Apache-2.0",
     classifiers=[

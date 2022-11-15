@@ -1,17 +1,21 @@
 # Python bindings and wrapper for Intel Paillier Cryptosystem Library
-[Intel Paillier Cryptosystem Library](https://github.com/intel/pailliercryptolib) is an open-source library which provides accelerated performance of a partial homomorphic encryption (HE), named Paillier cryptosystem, by utilizing Intel® [IPP-Crypto](https://github.com/intel/ipp-crypto) technologies on Intel CPUs supporting the AVX512IFMA instructions. The library is written in modern standard C++ and provides the essential API for the Paillier cryptosystem scheme.
-Intel Paillier Cryptosystem Library - Python is a Python extension package intended for Python based privacy preserving machine learning solutions which utilizes the partial HE scheme for increased data and model protection.
+[Intel Paillier Cryptosystem Library](https://github.com/intel/pailliercryptolib) is an open-source library which provides accelerated performance of a partial homomorphic encryption (HE), named Paillier cryptosystem, by utilizing Intel® [IPP-Crypto](https://github.com/intel/ipp-crypto) technologies on Intel CPUs supporting the AVX512IFMA instructions and Intel® [Quickassist Technology](https://01.org/intel-quickassist-technology). The library is written in modern standard C++ and provides the essential API for the Paillier cryptosystem scheme.
+Intel Paillier Cryptosystem Library - Python is a Python extension package intended for Python based privacy preserving machine learning solutions which utilizes the partial HE scheme for increased data and model protection. Intel Paillier Cryptosystem Library - Python is certified for ISO compliance.
 
 ## Contents
 - [Python bindings and wrapper for Intel Paillier Cryptosystem Library](#python-bindings-and-wrapper-for-intel-paillier-cryptosystem-library)
-  - [Contents](#content)
+  - [Contents](#contents)
   - [Introduction](#introduction)
   - [Installing the package](#installing-the-package)
     - [Prerequisites](#prerequisites)
     - [Dependencies](#dependencies)
     - [Installation](#installation)
   - [Usage](#usage)
+    - [General](#general)
+    - [Using with QAT](#using-with-qat)
+    - [Note: For more information of using the module, please refer to the example code available in the example folder.](#note-for-more-information-of-using-the-module-please-refer-to-the-example-code-available-in-the-example-folder)
     - [Benchmark](#benchmark)
+- [Standardization](#standardization)
 - [Contributors](#contributors)
 
 ## Introduction
@@ -52,20 +56,35 @@ cmake >=3.15.1
 git
 pthread
 g++ >= 7.0 or clang >= 10.0
-python >= 3.6.9
-pip>=22.0.1
 ```
 
 The following libraries and tools are also required,
 ```
-nasm >= 2.15
+python >= 3.6.9
+pip >= 22.0.1
 OpenSSL >= 1.1.0
 numa >= 2.0.12
 gmp >= 5.0.0
 mpfr >= 3.1.0
+mpc >= 1.1.0
 ```
 
-For additional dependencies regarding the C++ backend, refer to the [Intel Paillier Cryptosystem Library](https://github.com/intel/pailliercryptolib).
+which can be installed by:
+```bash
+# Ubuntu 20.04 or higher
+$ sudo apt install python3-dev python3-pip libssl-dev libnuma-dev libgmp-dev libmpfr-dev libmpc-dev
+
+# Fedora (RHEL 8, CentOS 8)
+$ sudo dnf install python3-devel python3-pip openssl-devel numactl-devel gmp-devel mpfr-devel libmpc-devel
+```
+
+The following is also required
+```
+nasm >= 2.15
+```
+For Ubuntu 20.04 or lower and RHEL/CentOS, please refer to the [Netwide Assembler webpage](https://nasm.us/) for download and installation details.
+
+For more details regarding the C++ backend, refer to the [Intel Paillier Cryptosystem Library](https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib).
 
 ### Installation
 Compiling and installing the package can be done by:
@@ -77,6 +96,12 @@ or
 pip install .
 ```
 
+For building a distributable wheel package of the Intel Paillier Cryptosystem Library - Python,
+```bash
+python setup.py bdist_wheel
+```
+and the wheel package can be found under ```{PROJECT_ROOT}/dist```.
+
 To test the installed module,
 ```bash
 python setup.py test
@@ -84,6 +109,7 @@ python setup.py test
 and the unit-test will be executed.
 
 ## Usage
+### General
 The module can be imported by:
 ```python
 import ipcl_python
@@ -132,8 +158,26 @@ de_d = prikey.decrypt(ct_d)
 print(np.allclose(a * b, de_d))
 ```
 
-For more details, please refer to [documentation (TBD)](https://github.com/intel/pailliercryptolib-python).
+### Using with QAT
+Before running the Python module with Quickassist Technology enabled, it is essential to trigger the QAT engine before running any workload and release it upon completion. Below is a simple code piece including how to initialize and release the QAT engine.
+```python
+from ipcl_python import context, PaillierKeypair
 
+# Reserve QAT engine
+context.initializeContext("QAT")
+
+# Sample Paillier HE operations
+pubkey, prikey = PaillierKeypair.generate_keypair(2048, True)
+a = np.random.rand(100)
+ct_a = pubkey.encrypt(a)
+de_a = prikey.decrypt(ct_a)
+print(np.allclose(a, de_a))
+
+# On completion - release QAT engine
+context.terminateContext()
+```
+
+### Note: For more information of using the module, please refer to the example code available in the [example](./example) folder.
 ### Benchmark
 We provide a benchmark tool, located under the folder [bench](bench/bench_ipcl_python.py). In order to run the benchmark, please install the [Google Benchmark](https://github.com/google/benchmark) via,
 ```bash

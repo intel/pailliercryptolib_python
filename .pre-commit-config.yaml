@@ -62,11 +62,18 @@ repos:
           name: cpplint
           entry: cpplint
           language: system
-          files: \.(c|cc|cxx|cpp|h|hpp|hxx)$
-          exclude: paillier/bignum.cpp|paillier/include/bignum.h
+          files: \.(cxx|cpp|hpp|hxx)$
           args:
             - --recursive
-            - --filter=-runtime/references
+            - --filter=-runtime/references,-whitespace/comments,-whitespace/indent
+        - id: cpplint-c
+          name: cpplint-c
+          entry: cpplint
+          language: system
+          files: \.(c|cc|h)$
+          args:
+            - --recursive
+            - --filter=-runtime/references,-whitespace/comments,-whitespace/indent,-readability/casting,-runtime/int
         - id: shellcheck
           name: shellcheck
           entry: shellcheck

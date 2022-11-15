@@ -4,7 +4,8 @@
 #include <memory>
 #include <vector>
 
-#include "include/ipcl_bindings.h"
+#include "include/baseconverter.hpp"
+#include "include/ipcl_bindings.hpp"
 
 namespace py = pybind11;
 
@@ -264,8 +265,6 @@ void def_ipclCipherText(py::module& m) {
       .def(py::init<const ipcl::PublicKey*, const uint32_t&>(),
            "ipclCipherText constructor")
       .def(py::init<const ipcl::PublicKey*, const BigNumber&>(),
-           "ipclCipherText constructor")
-      .def(py::init<const ipcl::PublicKey*, const ipcl::PlainText&>(),
            "ipclCipherText constructor")
       .def(py::init([](const ipcl::PublicKey* pk, py::list data) {
              std::vector<BigNumber> pData =

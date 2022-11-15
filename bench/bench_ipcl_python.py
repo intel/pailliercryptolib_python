@@ -1,6 +1,15 @@
+#! /usr/bin/env python3
+
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import numpy as np
 from ipcl_python import PaillierKeypair
 import ipcl_python as ipcl
+<<<<<<< HEAD
+=======
+from ipcl_python import context
+>>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
 import google_benchmark as benchmark
 
 
@@ -18,7 +27,11 @@ def BM_KeyGen(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Encrypt(state):
+<<<<<<< HEAD
     x = P - np.arange(state.range(0)) * 5.1112834624
+=======
+    x = (np.arange(state.range(0)) + 11) * 1234.5678
+>>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
     while state:
         _ = pk.encrypt(x)
 
@@ -28,7 +41,11 @@ def BM_Encrypt(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Decrypt(state):
+<<<<<<< HEAD
     x = P - np.arange(state.range(0)) * 5.1112834624
+=======
+    x = (np.arange(state.range(0)) + 1) * 1234.5678
+>>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
     ct_x = pk.encrypt(x)
     while state:
         _ = sk.decrypt(ct_x)
@@ -39,10 +56,16 @@ def BM_Decrypt(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Add_CTCT(state):
+<<<<<<< HEAD
     x = P - np.arange(state.range(0)) * 5.1112834624
     y = np.arange(state.range(0)) * 1.095123872 + Q
     ct_x = pk.encrypt(x)
     ct_x = ct_x * x
+=======
+    x = (np.arange(state.range(0)) + 11) * 5111.2834
+    y = (32768 - np.arange(state.range(0))) * 1.3872
+    ct_x = pk.encrypt(x)
+>>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
     ct_y = pk.encrypt(y)
     while state:
         _ = ct_x + ct_y
@@ -53,11 +76,16 @@ def BM_Add_CTCT(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Add_CTPT(state):
+<<<<<<< HEAD
     x = P - np.arange(state.range(0)) * 5.1112834624
+=======
+    x = (np.arange(state.range(0)) + 11) * 5111.2834
+    y = (32768 - np.arange(state.range(0))) * 1.3872
+>>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
     ct_x = pk.encrypt(x)
     ct_x = ct_x * x
     while state:
-        _ = ct_x + x
+        _ = ct_x + y
 
 
 @benchmark.register
@@ -65,9 +93,14 @@ def BM_Add_CTPT(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Mul_CTPT(state):
+<<<<<<< HEAD
     x = P - np.arange(state.range(0)) * 5.1112834624
     y = np.arange(state.range(0)) * 1.095123872 + Q
 
+=======
+    x = (np.arange(state.range(0)) + 11) * 5111.2834
+    y = (32768 - np.arange(state.range(0))) * 1.3872
+>>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
     ct_x = pk.encrypt(x)
     while state:
         _ = ct_x * y
@@ -91,7 +124,13 @@ if __name__ == "__main__":
     )
     N = P * Q
 
+<<<<<<< HEAD
+=======
+    context.initializeContext("QAT")
+
+>>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
     pk = ipcl.PaillierPublicKey(N, N.bit_length(), True)
     sk = ipcl.PaillierPrivateKey(pk, P, Q)
 
     benchmark.main()
+    context.terminateContext()

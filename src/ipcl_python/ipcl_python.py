@@ -36,6 +36,7 @@ class PaillierKeypair(object):
             (PaillierPublicKey, PaillierPrivateKey): Tuple of public and
                                                      private key
         """
+
         keys = ipclKeypair.generate_keypair(n_length, enable_DJN)
         pub = PaillierPublicKey(keys[0])
         pri = PaillierPrivateKey(keys[1])
@@ -604,9 +605,15 @@ class PaillierEncryptedNumber(object):
 
             ret = np.fromiter(x_ct.getTexts(), ipclBigNumber)
             ret[idx_to_multiply] = x_ipclCipherText_factored.getTexts()
+<<<<<<< HEAD
 
             return ipclCipherText(self.public_key.pubkey, ret.tolist())
 
+=======
+
+            return ipclCipherText(self.public_key.pubkey, ret.tolist())
+
+>>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
         return x_ct
 
     def __align_exponent(

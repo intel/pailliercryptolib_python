@@ -1,7 +1,9 @@
 // Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#include "include/ipcl_bindings.h"
+#include "include/ipcl_bindings.hpp"
+
+#include <iostream>
 
 namespace py = pybind11;
 
@@ -10,10 +12,14 @@ py::tuple py_ipclKeyPair::generate_keypair(int64_t n_length, bool enable_DJN) {
   return py::make_tuple(keys.pub_key, keys.priv_key);
 }
 
+void py_ipclHybridControl::setHybridMode(ipcl::HybridMode mode) {
+  ipcl::setHybridMode(mode);
+}
+
 PYBIND11_MODULE(ipcl_bindings, m) {
   m.doc() = "Python wrapper for Intel ipp-crypto Paillier cryptosystem";
 
-  py::class_<ipcl::keyPair>(m, "keyPair");
+  // py::class_<ipcl::keyPair>(m, "keyPair");
 
   // PaillierKeyPair and generate_keypair pymodule
   py::class_<py_ipclKeyPair>(m, "ipclKeypair")
@@ -21,6 +27,33 @@ PYBIND11_MODULE(ipcl_bindings, m) {
       .def_static("generate_keypair", [](int64_t n_length, bool enable_DJN) {
         return py_ipclKeyPair::generate_keypair(n_length, enable_DJN);
       });
+
+  py::class_<py_ipclContext>(m, "context")
+      .def_static("initializeContext", &py_ipclContext::initializeContext)
+      .def_static("terminateContext", &py_ipclContext::terminateContext)
+      .def_static("isQATRunning", &py_ipclContext::isQATRunning)
+      .def_static("isQATActive", &py_ipclContext::isQATActive);
+
+  py::enum_<ipcl::HybridMode>(m, "hybridMode")
+      .value("OPTIMAL", ipcl::HybridMode::OPTIMAL)
+      .value("QAT", ipcl::HybridMode::QAT)
+      .value("PREF_QAT90", ipcl::HybridMode::PREF_QAT90)
+      .value("PREF_QAT80", ipcl::HybridMode::PREF_QAT80)
+      .value("PREF_QAT70", ipcl::HybridMode::PREF_QAT70)
+      .value("PREF_QAT60", ipcl::HybridMode::PREF_QAT60)
+      .value("HALF", ipcl::HybridMode::HALF)
+      .value("PREF_IPP60", ipcl::HybridMode::PREF_IPP60)
+      .value("PREF_IPP70", ipcl::HybridMode::PREF_IPP70)
+      .value("PREF_IPP80", ipcl::HybridMode::PREF_IPP80)
+      .value("PREF_IPP90", ipcl::HybridMode::PREF_IPP90)
+      .value("IPP", ipcl::HybridMode::IPP)
+      .value("UNDEFINED", ipcl::HybridMode::UNDEFINED)
+      .export_values();
+
+  py::class_<py_ipclHybridControl>(m, "hybridControl")
+      .def_static("setHybridMode", &py_ipclHybridControl::setHybridMode)
+      .def_static("setHybridOff", &py_ipclHybridControl::setHybridOff)
+      .def_static("getHybridMode", &py_ipclHybridControl::getHybridMode);
 
   def_ipclPublicKey(m);
   def_ipclPrivateKey(m);
