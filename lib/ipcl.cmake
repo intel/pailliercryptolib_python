@@ -3,8 +3,8 @@
 
 include(FetchContent)
 MESSAGE(STATUS "Configuring Intel Paillier Cryptosystem Library")
-set(IPCL_GIT_REPO_URL https://github.com/intel-sandbox/libraries.security.cryptography.homomorphic-encryption.glade.pailliercryptolib.git)
-set(IPCL_GIT_LABEL v2.0.0-rc)
+set(IPCL_GIT_REPO_URL https://github.com/intel/pailliercryptolib.git)
+set(IPCL_GIT_LABEL ipcl_v2.0.0)
 
 # set IPCL flags
 if(IPCL_PYTHON_ENABLE_QAT)

@@ -11,11 +11,7 @@ import subprocess
 
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
-<<<<<<< HEAD
-from distutils.version import LooseVersion
-=======
 from pathlib import Path
->>>>>>> 66590993a11d1a0f140de6de9191fc5206b63cfb
 
 
 class CMakeExtension(Extension):
