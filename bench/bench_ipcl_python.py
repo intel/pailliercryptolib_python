@@ -1,3 +1,8 @@
+#! /usr/bin/env python3
+
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import numpy as np
 from ipcl_python import PaillierKeypair
 import ipcl_python as ipcl
@@ -18,7 +23,7 @@ def BM_KeyGen(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Encrypt(state):
-    x = P - np.arange(state.range(0)) * 5.1112834624
+    x = (np.arange(state.range(0)) + 11) * 1234.5678
     while state:
         _ = pk.encrypt(x)
 
@@ -28,7 +33,7 @@ def BM_Encrypt(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Decrypt(state):
-    x = P - np.arange(state.range(0)) * 5.1112834624
+    x = (np.arange(state.range(0)) + 1) * 1234.5678
     ct_x = pk.encrypt(x)
     while state:
         _ = sk.decrypt(ct_x)
@@ -39,10 +44,9 @@ def BM_Decrypt(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Add_CTCT(state):
-    x = P - np.arange(state.range(0)) * 5.1112834624
-    y = np.arange(state.range(0)) * 1.095123872 + Q
+    x = (np.arange(state.range(0)) + 11) * 5111.2834
+    y = (32768 - np.arange(state.range(0))) * 1.3872
     ct_x = pk.encrypt(x)
-    ct_x = ct_x * x
     ct_y = pk.encrypt(y)
     while state:
         _ = ct_x + ct_y
@@ -53,11 +57,12 @@ def BM_Add_CTCT(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Add_CTPT(state):
-    x = P - np.arange(state.range(0)) * 5.1112834624
+    x = (np.arange(state.range(0)) + 11) * 5111.2834
+    y = (32768 - np.arange(state.range(0))) * 1.3872
     ct_x = pk.encrypt(x)
     ct_x = ct_x * x
     while state:
-        _ = ct_x + x
+        _ = ct_x + y
 
 
 @benchmark.register
@@ -65,9 +70,8 @@ def BM_Add_CTPT(state):
 @benchmark.option.arg(16)
 @benchmark.option.arg(64)
 def BM_Mul_CTPT(state):
-    x = P - np.arange(state.range(0)) * 5.1112834624
-    y = np.arange(state.range(0)) * 1.095123872 + Q
-
+    x = (np.arange(state.range(0)) + 11) * 5111.2834
+    y = (32768 - np.arange(state.range(0))) * 1.3872
     ct_x = pk.encrypt(x)
     while state:
         _ = ct_x * y
