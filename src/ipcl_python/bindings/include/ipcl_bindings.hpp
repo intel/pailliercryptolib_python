@@ -12,7 +12,7 @@
 #include <string>
 #include <utility>
 
-#include "ipcl/context.hpp"
+// #include "ipcl/context.hpp"
 #include "ipcl/ipcl.hpp"
 
 #ifndef SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_HPP_
