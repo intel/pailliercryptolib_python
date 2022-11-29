@@ -14,20 +14,16 @@ void def_ipclPublicKey(py::module& m) {
   py::class_<ipcl::PublicKey, std::shared_ptr<ipcl::PublicKey>>(m,
                                                                 "ipclPublicKey")
       .def(py::init([](const BigNumber& n) {
-             return std::shared_ptr<ipcl::PublicKey>(
-                 new ipcl::PublicKey(n, 1024));
+             return std::make_shared<ipcl::PublicKey>(ipcl::PublicKey(n, 1024));
            }),
            "ipclPublicKey constructor")
       .def(py::init([](const BigNumber& n, int bits) {
-             return std::shared_ptr<ipcl::PublicKey>(
-                 new ipcl::PublicKey(n, bits));
+             return std::make_shared<ipcl::PublicKey>(ipcl::PublicKey(n, bits));
            }),
            "ipclPublicKey constructor")
       .def(py::init([](const BigNumber& n, int bits, bool enable_DJN) {
-        std::shared_ptr<ipcl::PublicKey> ret =
-            std::make_shared<ipcl::PublicKey>(new ipcl::PublicKey(n, bits));
-        if (enable_DJN) ret->enableDJN();
-        return ret;
+        return std::make_shared<ipcl::PublicKey>(
+            ipcl::PublicKey(n, bits, enable_DJN));
       }))
       .def("__repr__",
            [](const ipcl::PublicKey& self) {
@@ -99,8 +95,8 @@ void def_ipclPrivateKey(py::module& m) {
       m, "ipclPrivateKey")
       .def(py::init([](const ipcl::PublicKey& pubkey, const BigNumber& p,
                        const BigNumber& q) {
-             return std::shared_ptr<ipcl::PrivateKey>(
-                 new ipcl::PrivateKey(pubkey, p, q));
+             return std::make_shared<ipcl::PrivateKey>(
+                 ipcl::PrivateKey(pubkey, p, q));
            }),
            "ipclPrivateKey constructor")
       .def("__repr__",
