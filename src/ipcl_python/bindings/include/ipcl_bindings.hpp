@@ -47,8 +47,8 @@ void def_ipclPlainText(pybind11::module&);
 void def_ipclCipherText(pybind11::module&);
 
 namespace ipclPythonUtils {
-pybind11::tuple getTupleIpclPubKey(const ipcl::PublicKey* pk);
-ipcl::PublicKey* setIpclPubKey(const pybind11::tuple& t_pk);
+pybind11::tuple getTupleIpclPubKey(const ipcl::PublicKey& pk);
+ipcl::PublicKey setIpclPubKey(const pybind11::tuple& t_pk);
 BigNumber pyByte2BN(const pybind11::bytes& data);
 pybind11::bytes BN2bytes(const BigNumber& bn);
 };  // namespace ipclPythonUtils

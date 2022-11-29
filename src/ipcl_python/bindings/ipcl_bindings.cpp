@@ -7,8 +7,10 @@
 
 namespace py = pybind11;
 
+PYBIND11_MAKE_OPAQUE(BigNumber);
+
 py::tuple py_ipclKeyPair::generate_keypair(int64_t n_length, bool enable_DJN) {
-  ipcl::keyPair keys = ipcl::generateKeypair(n_length, enable_DJN);
+  ipcl::KeyPair keys = ipcl::generateKeypair(n_length, enable_DJN);
   return py::make_tuple(keys.pub_key, keys.priv_key);
 }
 
@@ -61,37 +63,36 @@ PYBIND11_MODULE(ipcl_bindings, m) {
 }
 
 namespace ipclPythonUtils {
-py::tuple getTupleIpclPubKey(const ipcl::PublicKey* pk) {
+py::tuple getTupleIpclPubKey(const ipcl::PublicKey& pk) {
   py::tuple ret;
-  int pk_length = pk->getBits();
-  bool isDJN = pk->isDJN();
+  int pk_length = pk.getBits();
+  bool isDJN = pk.isDJN();
   if (isDJN) {  // DJN scheme
-    auto l_n = BN2bytes(pk->getN());
-    auto l_hs = BN2bytes(pk->getHS());
-    int randbits = pk->getRandBits();
+    auto l_n = BN2bytes(*(pk.getN()));
+    auto l_hs = BN2bytes(pk.getHS());
+    int randbits = pk.getRandBits();
     ret = py::make_tuple(1, l_n, pk_length, l_hs, randbits);
   } else {  // Paillier scheme
-    auto l_n = BN2bytes(pk->getN());
+    auto l_n = BN2bytes(*(pk.getN()));
     ret = py::make_tuple(0, l_n, pk_length, 0, 0);
   }
   return ret;
 }
 
-ipcl::PublicKey* setIpclPubKey(const py::tuple& t_pk) {
-  ipcl::PublicKey* ret;
+ipcl::PublicKey setIpclPubKey(const py::tuple& t_pk) {
+  ipcl::PublicKey ret;
   int scheme = py::cast<int>(t_pk[0]);
   py::bytes l_n = t_pk[1];
   BigNumber n = pyByte2BN(l_n);
   int pk_length = py::cast<int>(t_pk[2]);
 
   if (scheme == 0) {  // Paillier scheme
-    ret = new ipcl::PublicKey(n, pk_length);
+    ret.create(n, pk_length);
   } else {  // DJN scheme
     py::bytes l_hs = t_pk[3];
     BigNumber hs = pyByte2BN(l_hs);
     int randbits = py::cast<int>(t_pk[4]);
-    ret = new ipcl::PublicKey(n, pk_length);
-    ret->setDJN(hs, randbits);
+    ret.create(n, pk_length, hs, randbits);
   }
   return ret;
 }

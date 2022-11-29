@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
@@ -15,9 +13,11 @@ def test_encrypt_decrypt(sz=128):
     a = np.random.rand(sz) * 1000
 
     # encrypt a
+    print("encrypt_decrypt : encrypting..")
     ct_a = pk.encrypt(a)
 
     # decrypt ct_a
+    print("encrypt_decrypt : decrypting..")
     de_a = sk.decrypt(ct_a)
 
     # verify result
