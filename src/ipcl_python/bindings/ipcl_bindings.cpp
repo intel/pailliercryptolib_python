@@ -127,4 +127,13 @@ py::bytes BN2bytes(const BigNumber& bn) {
   std::string str(reinterpret_cast<char*>(bytesData), length);
   return py::bytes(str);
 }
+py::bytes BN2bytes(const std::shared_ptr<BigNumber>& bn) {
+  int bnBitLen;
+  Ipp32u* bnData = nullptr;
+  ippsRef_BN(nullptr, &bnBitLen, &bnData, *bn);
+  int length = BITSIZE_WORD(bnBitLen) * 4;
+  unsigned char* bytesData = reinterpret_cast<unsigned char*>(bnData);
+  std::string str(reinterpret_cast<char*>(bytesData), length);
+  return py::bytes(str);
+}
 };  // namespace ipclPythonUtils

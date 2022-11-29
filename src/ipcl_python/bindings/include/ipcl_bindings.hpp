@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -51,6 +52,7 @@ pybind11::tuple getTupleIpclPubKey(const ipcl::PublicKey& pk);
 ipcl::PublicKey setIpclPubKey(const pybind11::tuple& t_pk);
 BigNumber pyByte2BN(const pybind11::bytes& data);
 pybind11::bytes BN2bytes(const BigNumber& bn);
+pybind11::bytes BN2bytes(const std::shared_ptr<BigNumber>& bn);
 };  // namespace ipclPythonUtils
 
 #endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_HPP_

@@ -141,11 +141,11 @@ void def_ipclPrivateKey(py::module& m) {
           "decrypt ipcl::CipherText into container of ipcl::PlainText")
       .def(py::pickle(
           [](const ipcl::PrivateKey& self) {  // __getstate__
-            BigNumber n = *(self.getN());
+            std::shared_ptr<BigNumber> n = self.getN();
             auto _n = ipclPythonUtils::BN2bytes(n);
-            BigNumber p = *(self.getP());
+            std::shared_ptr<BigNumber> p = self.getP();
             auto _p = ipclPythonUtils::BN2bytes(p);
-            BigNumber q = *(self.getQ());
+            std::shared_ptr<BigNumber> q = self.getQ();
             auto _q = ipclPythonUtils::BN2bytes(q);
 
             return py::make_tuple(_n, _p, _q);
