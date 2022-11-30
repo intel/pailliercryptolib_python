@@ -68,12 +68,12 @@ py::tuple getTupleIpclPubKey(const ipcl::PublicKey& pk) {
   int pk_length = pk.getBits();
   bool isDJN = pk.isDJN();
   if (isDJN) {  // DJN scheme
-    auto l_n = BN2bytes(*(pk.getN()));
+    auto l_n = BN2bytes(pk.getN());
     auto l_hs = BN2bytes(pk.getHS());
     int randbits = pk.getRandBits();
     ret = py::make_tuple(1, l_n, pk_length, l_hs, randbits);
   } else {  // Paillier scheme
-    auto l_n = BN2bytes(*(pk.getN()));
+    auto l_n = BN2bytes(pk.getN());
     ret = py::make_tuple(0, l_n, pk_length, 0, 0);
   }
   return ret;
