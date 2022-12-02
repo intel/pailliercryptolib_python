@@ -9,9 +9,9 @@ import sys
 import platform
 import subprocess
 
-from distutils.version import LooseVersion
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
+from distutils.version import LooseVersion
 
 
 class CMakeExtension(Extension):
@@ -47,8 +47,7 @@ class CMakeBuild(build_ext):
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
             "-DPYTHON_EXECUTABLE=" + sys.executable,
-            "-DIPCL_PYTHON_ENABLE_OMP=ON",
-            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DIPCL_PYTHON_ENABLE_OMP=OFF",
         ]
 
         cfg = "Debug" if self.debug else "Release"
@@ -65,7 +64,8 @@ class CMakeBuild(build_ext):
             build_args += ["--", "/m"]
         else:
             cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
-            build_args += ["--", "-j" + str(os.cpu_count() - 1)]
+            cpu_count = os.cpu_count() - 1 if os.cpu_count() > 1 else 1
+            build_args += ["--", "-j" + str(cpu_count)]
 
         env = os.environ.copy()
         env["CXXFLAGS"] = '{} -DVERSION_INFO=\\"{}\\"'.format(
