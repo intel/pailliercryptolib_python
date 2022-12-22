@@ -36,6 +36,7 @@ class PaillierKeypair(object):
             (PaillierPublicKey, PaillierPrivateKey): Tuple of public and
                                                      private key
         """
+
         keys = ipclKeypair.generate_keypair(n_length, enable_DJN)
         pub = PaillierPublicKey(keys[0])
         pri = PaillierPrivateKey(keys[1])
@@ -160,12 +161,16 @@ class PaillierPrivateKey(object):
         """
         if isinstance(key, ipclPrivateKey):
             self.prikey = key
-            self.public_key = PaillierPublicKey(key.public_key)
+            self.__n = BNUtils.BN2int(key.n)
+            self.__max_int = self.__n // 3 - 1
+            # self.public_key = PaillierPublicKey(key.public_key)
         elif isinstance(key, ipclPublicKey) and p is not None and q is not None:
             self.prikey = ipclPrivateKey(
                 key, BNUtils.int2BN(p), BNUtils.int2BN(q)
             )
-            self.public_key = PaillierPublicKey(key)
+            self.__n = BNUtils.BN2int(key.n)
+            self.__max_int = self.__n // 3 - 1
+            # self.public_key = PaillierPublicKey(key)
         elif (
             isinstance(key, PaillierPublicKey)
             and p is not None
@@ -174,7 +179,8 @@ class PaillierPrivateKey(object):
             self.prikey = ipclPrivateKey(
                 key.pubkey, BNUtils.int2BN(p), BNUtils.int2BN(q)
             )
-            self.public_key = key
+            self.__n = key.n
+            self.__max_int = key.max_int
         else:
             raise KeyError(
                 "PaillierPrivateKey: key should be either Private key or"
@@ -182,11 +188,10 @@ class PaillierPrivateKey(object):
             )
 
     def __getstate__(self):
-        return self.prikey
+        return (self.prikey, self.__n, self.__max_int)
 
     def __setstate__(self, state):
-        self.prikey = state
-        self.public_key = PaillierPublicKey(self.prikey.public_key)
+        (self.prikey, self.__n, self.__max_int) = state
 
     def __eq__(self, other: "PaillierPrivateKey"):
         return (self.prikey.p == other.prikey.p) and (
@@ -200,7 +205,7 @@ class PaillierPrivateKey(object):
         return self.prikey.__repr__()
 
     def raw_decrypt(self, ciphertext: "PaillierEncryptedNumber") -> int:
-        if ciphertext.public_key != self.public_key:
+        if ciphertext.public_key.n != self.__n:
             raise ValueError(
                 "PaillierPrivateKey.raw_decrypt:" "Public key mismatch"
             )
@@ -224,7 +229,7 @@ class PaillierPrivateKey(object):
         Returns:
             array or single integer of decrypted encrypted number
         """
-        if encrypted_number.public_key != self.public_key:
+        if encrypted_number.public_key.n != self.__n:
             raise ValueError("PailierPrivateKey.decrypt: Public key mismatch")
 
         decrypted = self.prikey.decrypt(encrypted_number.ciphertext())
@@ -235,8 +240,8 @@ class PaillierPrivateKey(object):
             dec = FixedPointNumber(
                 BNUtils.BN2int(pt),
                 expo,
-                self.public_key.n,
-                self.public_key.max_int,
+                self.__n,
+                self.__max_int,
             )
             ret.append(dec.decode())
 
