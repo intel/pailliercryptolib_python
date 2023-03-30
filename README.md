@@ -60,7 +60,7 @@ g++ >= 7.0 or clang >= 10.0
 
 The following libraries and tools are also required,
 ```
-python >= 3.6.9
+Python >= 3.8
 pip >= 22.0.1
 OpenSSL >= 1.1.0
 numa >= 2.0.12
