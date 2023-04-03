@@ -86,7 +86,7 @@ setup(
         "wheel",
         "numpy==1.23.1",
         "pycryptodomex==3.15.0",
-        "gmpy2==2.0.8",
+        "gmpy2==2.1.5",
         "cachetools==3.0.0",
         "ruamel.yaml==0.16.10",
     ],
