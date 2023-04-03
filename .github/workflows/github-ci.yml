@@ -22,7 +22,7 @@ on:
 jobs:
   format:
     name: Format check
-    runs-on: [self-hosted, linux, x64, icx]
+    runs-on: [self-hosted, linux, x64, icx, debian]
     # Use environment protection (require review)
     environment: intel_workflow
     steps:
@@ -36,7 +36,7 @@ jobs:
   build-and-test:
     name: Build and test IPCL-Python extension
     needs: [format]
-    runs-on: [self-hosted, linux, x64, icx]
+    runs-on: [self-hosted, linux, x64, icx, debian]
     # Use environment protection (require review)
     environment: intel_workflow
     defaults:
