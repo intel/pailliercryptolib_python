@@ -112,6 +112,7 @@ class PaillierPublicKey(object):
         self,
         value: Union[np.ndarray, list, int, float],
         apply_obfuscator: bool = True,
+        precision: Union[None, int] = None,
     ) -> "PaillierEncryptedNumber":
         """
         Encrypts scalar or list/array of scalars
@@ -134,7 +135,9 @@ class PaillierPublicKey(object):
                     "PaillierPublicKey.encrypt: input value(s) should be"
                     " integer or float"
                 )
-            encoding = FixedPointNumber.encode(val, self.n, self.max_int)
+            encoding = FixedPointNumber.encode(
+                val, self.n, self.max_int, precision
+            )
             enc.append(BNUtils.int2BN(encoding.encoding))
             expo.append(encoding.exponent)
 
