@@ -135,7 +135,8 @@ class PaillierPublicKey(object):
                     "PaillierPublicKey.encrypt: input value(s) should be"
                     " integer or float"
                 )
-            encoding = FixedPointNumber.encode(val, self.n, self.max_int, precision)
+            encoding = FixedPointNumber.encode(
+                val, self.n, self.max_int, precision)
             enc.append(BNUtils.int2BN(encoding.encoding))
             expo.append(encoding.exponent)
 
@@ -295,7 +296,8 @@ class PaillierEncryptedNumber(object):
             ciphertextPyInt,
         ) = state
         self.__ipclCipherText = ipclCipherText(
-            self.public_key.pubkey, [BNUtils.int2BN(i) for i in ciphertextPyInt]
+            self.public_key.pubkey, [
+                BNUtils.int2BN(i) for i in ciphertextPyInt]
         )
 
     def __len__(self) -> int:
@@ -456,7 +458,8 @@ class PaillierEncryptedNumber(object):
                         BNUtils.int2BN(
                             int(
                                 gmpy2.invert(
-                                    BNUtils.BN2int(_ct), self.public_key.nsquare
+                                    BNUtils.BN2int(
+                                        _ct), self.public_key.nsquare
                                 )
                             )
                         )
@@ -511,7 +514,8 @@ class PaillierEncryptedNumber(object):
                         BNUtils.int2BN(
                             int(
                                 gmpy2.invert(
-                                    BNUtils.BN2int(_ct), self.public_key.nsquare
+                                    BNUtils.BN2int(
+                                        _ct), self.public_key.nsquare
                                 )
                             )
                         )
