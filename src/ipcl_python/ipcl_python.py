@@ -136,7 +136,8 @@ class PaillierPublicKey(object):
                     " integer or float"
                 )
             encoding = FixedPointNumber.encode(
-                val, self.n, self.max_int, precision)
+                val, self.n, self.max_int, precision
+            )
             enc.append(BNUtils.int2BN(encoding.encoding))
             expo.append(encoding.exponent)
 
