@@ -112,7 +112,7 @@ class PaillierPublicKey(object):
         self,
         value: Union[np.ndarray, list, int, float],
         apply_obfuscator: bool = True,
-        precision: Union[None, int] = None
+        precision: Union[None, int] = None,
     ) -> "PaillierEncryptedNumber":
         """
         Encrypts scalar or list/array of scalars
