@@ -24,7 +24,7 @@ import numpy as np
 class FixedPointNumber(object):
     """Represents a float or int fixedpoint encoding;.
     """
-    BASE = 16
+    BASE = 2
     LOG2_BASE = math.log(BASE, 2)
     FLOAT_MANTISSA_BITS = sys.float_info.mant_dig
 
