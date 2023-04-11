@@ -13,6 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+#  Modifications Copyright (C) 2021 Intel Corporation
+#
 
 import functools
 import math
