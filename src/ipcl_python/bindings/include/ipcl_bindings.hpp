@@ -1,10 +1,11 @@
 // Copyright (C) 2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 
-#include <pybind11/numpy.h>
-#include <pybind11/operators.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
+#include <nanobind/stl/shared_ptr.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
 
 #include <functional>
 #include <iostream>
@@ -20,7 +21,7 @@
 #define SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_HPP_
 class py_ipclKeyPair {
  public:
-  static pybind11::tuple generate_keypair(int64_t n_length = 1024,
+  static nanobind::tuple generate_keypair(int64_t n_length = 1024,
                                           bool enable_DJN = true);
 };
 
@@ -41,18 +42,18 @@ class py_ipclHybridControl {
   static ipcl::HybridMode getHybridMode() { return ipcl::getHybridMode(); }
 };
 
-void def_ipclPublicKey(pybind11::module&);
-void def_ipclPrivateKey(pybind11::module&);
-void def_BigNumber(pybind11::module&);
-void def_ipclPlainText(pybind11::module&);
-void def_ipclCipherText(pybind11::module&);
+void def_ipclPublicKey(nanobind::module_&);
+void def_ipclPrivateKey(nanobind::module_&);
+void def_BigNumber(nanobind::module_&);
+void def_ipclPlainText(nanobind::module_&);
+void def_ipclCipherText(nanobind::module_&);
 
 namespace ipclPythonUtils {
-pybind11::tuple getTupleIpclPubKey(const ipcl::PublicKey& pk);
-ipcl::PublicKey setIpclPubKey(const pybind11::tuple& t_pk);
-BigNumber pyByte2BN(const pybind11::bytes& data);
-pybind11::bytes BN2bytes(const BigNumber& bn);
-pybind11::bytes BN2bytes(const std::shared_ptr<BigNumber>& bn);
+nanobind::tuple getTupleIpclPubKey(const ipcl::PublicKey& pk);
+ipcl::PublicKey setIpclPubKey(const nanobind::tuple& t_pk);
+BigNumber pyByte2BN(const nanobind::bytes& data);
+nanobind::bytes BN2bytes(const BigNumber& bn);
+nanobind::bytes BN2bytes(const std::shared_ptr<BigNumber>& bn);
 };  // namespace ipclPythonUtils
 
 #endif  // SRC_IPCL_PYTHON_BINDINGS_INCLUDE_IPCL_BINDINGS_HPP_

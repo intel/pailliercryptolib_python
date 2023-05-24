@@ -7,24 +7,28 @@
 #include "include/baseconverter.hpp"
 #include "include/ipcl_bindings.hpp"
 
-namespace py = pybind11;
+namespace nb = nanobind;
 
-void def_ipclPublicKey(py::module& m) {
+void def_ipclPublicKey(nb::module_& m) {
   // Paillier publickey module
-  py::class_<ipcl::PublicKey, std::shared_ptr<ipcl::PublicKey>>(m,
-                                                                "ipclPublicKey")
-      .def(py::init([](const BigNumber& n) {
-             return std::make_shared<ipcl::PublicKey>(ipcl::PublicKey(n, 1024));
-           }),
-           "ipclPublicKey constructor")
-      .def(py::init([](const BigNumber& n, int bits) {
-             return std::make_shared<ipcl::PublicKey>(ipcl::PublicKey(n, bits));
-           }),
-           "ipclPublicKey constructor")
-      .def(py::init([](const BigNumber& n, int bits, bool enable_DJN) {
-        return std::make_shared<ipcl::PublicKey>(
-            ipcl::PublicKey(n, bits, enable_DJN));
-      }))
+  nb::class_<ipcl::PublicKey>(m, "ipclPublicKey")
+      .def(
+          "__init__",
+          [](ipcl::PublicKey* t, const BigNumber& n) {
+            new (t) ipcl::PublicKey(n, 1024);
+          },
+          "ipclPublicKey constructor")
+      .def(
+          "__init__",
+          [](ipcl::PublicKey* t, const BigNumber& n, int bits) {
+            new (t) ipcl::PublicKey(n, bits);
+          },
+          "ipclPublicKey constructor")
+      .def(
+          "__init__",
+          [](ipcl::PublicKey* t, const BigNumber& n, int bits,
+             bool enable_DJN) { new (t) ipcl::PublicKey(n, bits, enable_DJN); },
+          "ipclPublicKey constructor")
       .def("__repr__",
            [](const ipcl::PublicKey& self) {
              std::stringstream ss;
@@ -44,12 +48,11 @@ void def_ipclPublicKey(py::module& m) {
              std::size_t hashcode = std::hash<std::string>{}(ss.str());
              return hashcode;
            })
-      .def_property_readonly("n", &ipcl::PublicKey::getN,
-                             "ipclPublicKey n in ipclBigNumber")
-      .def_property_readonly("length", &ipcl::PublicKey::getBits,
-                             "ipclPublicKey length")
-      .def_property_readonly("nsquare", &ipcl::PublicKey::getNSQ,
-                             "square of ipclPublicKey n in ipclBigNumber")
+      .def_prop_ro("n", &ipcl::PublicKey::getN,
+                   "ipclPublicKey n in ipclBigNumber")
+      .def_prop_ro("length", &ipcl::PublicKey::getBits, "ipclPublicKey length")
+      .def_prop_ro("nsquare", &ipcl::PublicKey::getNSQ,
+                   "square of ipclPublicKey n in ipclBigNumber")
       .def(
           "encrypt",  // encrypt plaintext
           [](const ipcl::PublicKey& self, const ipcl::PlainText& pt,
@@ -64,8 +67,7 @@ void def_ipclPublicKey(py::module& m) {
           [](const ipcl::PublicKey& self, const ipcl::PlainText& pt,
              bool make_secure) {
             ipcl::CipherText ct = self.encrypt(pt, make_secure);
-            py::list l_container = py::cast(ct.getTexts());
-            return l_container;
+            return ct.getTexts();
           },
           "encrypt ipcl::PlainText and returns container of ipcl::CipherText")
       .def("apply_obfuscator",  // ciphertext obfuscator
@@ -78,27 +80,25 @@ void def_ipclPublicKey(py::module& m) {
            [](const ipcl::PublicKey& self, const ipcl::CipherText& ct) {
              std::vector<BigNumber> ret = ct.getTexts();
              self.applyObfuscator(ret);
-             py::list l_ret = py::cast(ret);
-             return l_ret;
+             return ret;
            })
-      .def(py::pickle(
-          [](const ipcl::PublicKey& self) {  // __getstate__
-            return ipclPythonUtils::getTupleIpclPubKey(self);
-          },
-          [](py::tuple t) {  // __setstate__
-            return ipclPythonUtils::setIpclPubKey(t);
-          }));
+      .def("__getstate__",
+           [](const ipcl::PublicKey& self) {
+             return ipclPythonUtils::getTupleIpclPubKey(self);
+           })
+      .def("__setstate__", [](ipcl::PublicKey& self, nb::tuple t) {
+        new (&self) ipcl::PublicKey(ipclPythonUtils::setIpclPubKey(t));
+      });
 }
 
-void def_ipclPrivateKey(py::module& m) {
-  py::class_<ipcl::PrivateKey, std::shared_ptr<ipcl::PrivateKey>>(
-      m, "ipclPrivateKey")
-      .def(py::init([](const ipcl::PublicKey& pubkey, const BigNumber& p,
-                       const BigNumber& q) {
-             return std::make_shared<ipcl::PrivateKey>(
-                 ipcl::PrivateKey(pubkey, p, q));
-           }),
-           "ipclPrivateKey constructor")
+void def_ipclPrivateKey(nb::module_& m) {
+  nb::class_<ipcl::PrivateKey>(m, "ipclPrivateKey")
+      .def(
+          "__init__",
+          [](ipcl::PrivateKey* t, const ipcl::PublicKey& pubkey,
+             const BigNumber& p,
+             const BigNumber& q) { new (t) ipcl::PrivateKey(pubkey, p, q); },
+          "ipclPrivateKey constructor")
       .def("__repr__",
            [](const ipcl::PrivateKey& self) {
              std::stringstream ss;
@@ -118,12 +118,11 @@ void def_ipclPrivateKey(py::module& m) {
              std::size_t hashcode = std::hash<std::string>{}(ss.str());
              return hashcode;
            })
-      .def_property_readonly("n", &ipcl::PrivateKey::getN,
-                             "get ipclPublicKey n property")
-      .def_property_readonly("p", &ipcl::PrivateKey::getP,
-                             "get ipclPrivateKey p property")
-      .def_property_readonly("q", &ipcl::PrivateKey::getQ,
-                             "get ipclPrivateKey q property")
+      .def_prop_ro("n", &ipcl::PrivateKey::getN, "get ipclPublicKey n property")
+      .def_prop_ro("p", &ipcl::PrivateKey::getP,
+                   "get ipclPrivateKey p property")
+      .def_prop_ro("q", &ipcl::PrivateKey::getQ,
+                   "get ipclPrivateKey q property")
       .def(
           "decrypt",  // decrypt ipcl::CipherText
           [](ipcl::PrivateKey& self, const ipcl::CipherText& ct) {
@@ -135,55 +134,56 @@ void def_ipclPrivateKey(py::module& m) {
           "decrypt_tolist",  // decrypt ipcl::CipherText and return container
           [](ipcl::PrivateKey& self, const ipcl::CipherText& ct) {
             ipcl::PlainText pt = self.decrypt(ct);
-            py::list l_container = py::cast(pt.getTexts());
-            return l_container;
+            return pt.getTexts();
           },
           "decrypt ipcl::CipherText into container of ipcl::PlainText")
-      .def(py::pickle(
-          [](const ipcl::PrivateKey& self) {  // __getstate__
-            std::shared_ptr<BigNumber> n = self.getN();
-            auto _n = ipclPythonUtils::BN2bytes(n);
-            std::shared_ptr<BigNumber> p = self.getP();
-            auto _p = ipclPythonUtils::BN2bytes(p);
-            std::shared_ptr<BigNumber> q = self.getQ();
-            auto _q = ipclPythonUtils::BN2bytes(q);
+      .def("__getstate__",
+           [](const ipcl::PrivateKey& self) {
+             std::shared_ptr<BigNumber> n = self.getN();
+             auto _n = ipclPythonUtils::BN2bytes(n);
+             std::shared_ptr<BigNumber> p = self.getP();
+             auto _p = ipclPythonUtils::BN2bytes(p);
+             std::shared_ptr<BigNumber> q = self.getQ();
+             auto _q = ipclPythonUtils::BN2bytes(q);
 
-            return py::make_tuple(_n, _p, _q);
-          },
-          [](py::tuple t) {  // __setstate__
-            py::bytes l_n = t[0];
-            BigNumber n = ipclPythonUtils::pyByte2BN(l_n);
-            py::bytes l_p = t[1];
-            BigNumber p = ipclPythonUtils::pyByte2BN(l_p);
-            py::bytes l_q = t[2];
-            BigNumber q = ipclPythonUtils::pyByte2BN(l_q);
-            return std::unique_ptr<ipcl::PrivateKey>(
-                new ipcl::PrivateKey(n, p, q));
-          }));
+             return nb::make_tuple(_n, _p, _q);
+           })
+      .def("__setstate__", [](ipcl::PrivateKey& self, nb::tuple t) {
+        nb::bytes l_n = t[0];
+        BigNumber n = ipclPythonUtils::pyByte2BN(l_n);
+        nb::bytes l_p = t[1];
+        BigNumber p = ipclPythonUtils::pyByte2BN(l_p);
+        nb::bytes l_q = t[2];
+        BigNumber q = ipclPythonUtils::pyByte2BN(l_q);
+        new (&self) ipcl::PrivateKey(n, p, q);
+      });
 }
 
-void def_ipclPlainText(py::module& m) {
+void def_ipclPlainText(nb::module_& m) {
   // ipcl::PlainText
-  py::class_<ipcl::PlainText>(m, "ipclPlainText")
-      .def(py::init<const uint32_t&>(), "ipclPlainText constructor")
-      .def(py::init<const BigNumber&>(), "ipclPlainText constructor")
-      .def(py::init<const ipcl::PlainText&>(), "ipclPlainText constructor")
-      .def(py::init([](py::list data) {
-             std::vector<BigNumber> pData =
-                 py::cast<std::vector<BigNumber>>(data);
-             return ipcl::PlainText(pData);
-           }),
-           "ipclPlainText constructor with list of BigNumbers")
-      .def(py::init([](py::array_t<Ipp32u> data) {
-             py::buffer_info buffer_info = data.request();
-             size_t length = buffer_info.shape[0];
-             Ipp32u* _data = static_cast<Ipp32u*>(buffer_info.ptr);
-             std::vector<Ipp32u> pData(_data, _data + length);
-             delete[] _data;
-             return ipcl::PlainText(pData);
-           }),
-           "ipclPlainText constructor with numpy array of unsigned integers "
-           "(32bit)")
+  nb::class_<ipcl::PlainText, ipcl::BaseText>(m, "ipclPlainText")
+      .def(nb::init<const uint32_t&>(), "ipclPlainText constructor")
+      .def(nb::init<const BigNumber&>(), "ipclPlainText constructor")
+      .def(nb::init<const ipcl::PlainText&>(), "ipclPlainText constructor")
+      .def(
+          "__init__",
+          [](ipcl::PlainText* t, nb::list data) {
+            std::vector<BigNumber> pData =
+                nb::cast<std::vector<BigNumber>>(data);
+            new (t) ipcl::PlainText(pData);
+          },
+          "ipclPlainText constructor with list of BigNumbers")
+      .def(
+          "__init__",
+          [](ipcl::PlainText* t, nb::ndarray<Ipp32u> data) {
+            size_t length = data.shape(0);
+            Ipp32u* _data = static_cast<Ipp32u*>(data.data());
+            std::vector<Ipp32u> pData(_data, _data + length);
+            delete[] _data;
+            new (t) ipcl::PlainText(pData);
+          },
+          "ipclPlainText constructor with numpy array of unsigned integers "
+          "(32bit)")
       .def("__repr__",
            [](const ipcl::PlainText& self) {
              std::stringstream ss;
@@ -220,8 +220,7 @@ void def_ipclPlainText(py::module& m) {
           "getElementVec",
           [](const ipcl::PlainText& self, const size_t& n) {
             std::vector<uint32_t> vec = self.getElementVec(n);
-            py::list l_vec = py::cast(vec);
-            return l_vec;
+            return vec;
           },
           "Get element in little endian vector")
       .def("getElementHex", &ipcl::PlainText::getElementHex,
@@ -230,56 +229,57 @@ void def_ipclPlainText(py::module& m) {
           "getTexts",
           [](const ipcl::PlainText& self) {
             std::vector<BigNumber> vec = self.getTexts();
-            py::list l_vec = py::cast(vec);
-            return l_vec;
+            return vec;
           },
           "Get container in BigNumber vector")
-      .def("getSize", &ipcl::PlainText::getSize,
-           "Get size of container")
-      .def(py::pickle(
-          [](const ipcl::PlainText& self) {  // __getstate__
-            std::vector<BigNumber> vec = self.getTexts();
-            size_t length = self.getSize();
-            py::list l_bn;
-            for (auto it : vec) l_bn.append(ipclPythonUtils::BN2bytes(it));
-            return py::make_tuple(length, l_bn);
-          },
-          [](const py::tuple& t) {  // __setstate__
-            size_t length = static_cast<size_t>(py::cast<int>(t[0]));
-            std::vector<BigNumber> vec(length);
-            py::list l_lbn = t[1];
-            for (size_t i = 0; i < length; ++i) {
-              py::bytes lbn = l_lbn[i];
-              vec[i] = ipclPythonUtils::pyByte2BN(lbn);
-            }
-            return ipcl::PlainText(vec);
-          }));
+      .def("getSize", &ipcl::PlainText::getSize, "Get size of container")
+      .def("__getstate__",
+           [](const ipcl::PlainText& self) {
+             std::vector<BigNumber> vec = self.getTexts();
+             size_t length = self.getSize();
+             nb::list l_bn;
+             for (auto it : vec) l_bn.append(ipclPythonUtils::BN2bytes(it));
+             return nb::make_tuple(length, l_bn);
+           })
+      .def("__setstate__", [](ipcl::PlainText& self, const nb::tuple& t) {
+        size_t length = static_cast<size_t>(nb::cast<int>(t[0]));
+        std::vector<BigNumber> vec(length);
+        nb::list l_lbn = t[1];
+        for (size_t i = 0; i < length; ++i) {
+          nb::bytes lbn = l_lbn[i];
+          vec[i] = ipclPythonUtils::pyByte2BN(lbn);
+        }
+        new (&self) ipcl::PlainText(vec);
+      });
 }
 
-void def_ipclCipherText(py::module& m) {
+void def_ipclCipherText(nb::module_& m) {
   // ipcl::CipherText
-  py::class_<ipcl::CipherText, std::shared_ptr<ipcl::CipherText>>(
-      m, "ipclCipherText")
-      .def(py::init<const ipcl::PublicKey&, const uint32_t&>(),
+  nb::class_<ipcl::CipherText, ipcl::BaseText>(m, "ipclCipherText")
+      .def(nb::init<const ipcl::PublicKey&, const uint32_t&>(),
            "ipclCipherText constructor")
-      .def(py::init<const ipcl::PublicKey&, const BigNumber&>(),
+      .def(nb::init<const ipcl::PublicKey&, const BigNumber&>(),
            "ipclCipherText constructor")
-      .def(py::init([](const ipcl::PublicKey& pk, py::list data) {
-             std::vector<BigNumber> pData =
-                 py::cast<std::vector<BigNumber>>(data);
-             return ipcl::CipherText(pk, pData);
-           }),
-           "ipclCipherText constructor with list of BigNumbers")
-      .def(py::init([](const ipcl::PublicKey& pk, py::array_t<Ipp32u> data) {
-             py::buffer_info buffer_info = data.request();
-             size_t length = buffer_info.shape[0];
-             Ipp32u* _data = static_cast<Ipp32u*>(buffer_info.ptr);
-             std::vector<Ipp32u> pData(_data, _data + length);
-             delete[] _data;
-             return ipcl::CipherText(pk, pData);
-           }),
-           "ipclCipherText constructor with numpy array of unsigned integers "
-           "(32bit)")
+      .def(
+          "__init__",
+          [](ipcl::CipherText* t, const ipcl::PublicKey& pk, nb::list data) {
+            std::vector<BigNumber> pData =
+                nb::cast<std::vector<BigNumber>>(data);
+            new (t) ipcl::CipherText(pk, pData);
+          },
+          "ipclCipherText constructor with list of BigNumbers")
+      .def(
+          "__init__",
+          [](ipcl::CipherText* t, const ipcl::PublicKey& pk,
+             nb::ndarray<Ipp32u> data) {
+            size_t length = data.shape(0);
+            Ipp32u* _data = static_cast<Ipp32u*>(data.data());
+            std::vector<Ipp32u> pData(_data, _data + length);
+            delete[] _data;
+            new (t) ipcl::CipherText(pk, pData);
+          },
+          "ipclCipherText constructor with numpy array of unsigned integers "
+          "(32bit)")
       .def("__repr__",
            [](const ipcl::CipherText& self) {
              std::stringstream ss;
@@ -313,79 +313,77 @@ void def_ipclCipherText(py::module& m) {
           "getElementVec",
           [](const ipcl::CipherText& self, const size_t& n) {
             std::vector<uint32_t> vec = self.getElementVec(n);
-            py::list l_vec = py::cast(vec);
-            return l_vec;
+            return vec;
           },
           "Get element in little endian vector")
-      .def_property_readonly("public_key",
-                             [](const ipcl::CipherText& self) {
-                               std::shared_ptr<ipcl::PublicKey> pk =
-                                   self.getPubKey();
-                               return pk;
-                             })
+      .def_prop_ro("public_key",
+                   [](const ipcl::CipherText& self) {
+                     std::shared_ptr<ipcl::PublicKey> pk = self.getPubKey();
+                     return pk;
+                   })
       .def("getElementHex", &ipcl::CipherText::getElementHex,
            "Get element in hexadecimal string")
       .def(
           "getTexts",
           [](const ipcl::CipherText& self) {
             std::vector<BigNumber> vec = self.getTexts();
-            py::list l_vec = py::cast(vec);
-            return l_vec;
+            return vec;
           },
           "Get container in BigNumber vector")
-      .def("getSize", &ipcl::CipherText::getSize,
-           "Get size of container")
-      .def(py::pickle(
-          [](const ipcl::CipherText& self) {  // __getstate__
-            std::vector<BigNumber> vec = self.getTexts();
-            size_t length = self.getSize();
-            py::list l_bn;
-            for (auto it : vec) l_bn.append(ipclPythonUtils::BN2bytes(it));
-            std::shared_ptr<ipcl::PublicKey> _pk = self.getPubKey();
-            py::tuple t_pubkey = ipclPythonUtils::getTupleIpclPubKey(*_pk);
-            return py::make_tuple(length, l_bn, t_pubkey);
-          },
-          [](const py::tuple& t) {  // __setstate__
-            size_t length = static_cast<size_t>(py::cast<int>(t[0]));
-            std::vector<BigNumber> vec(length);
-            py::list l_lbn = t[1];
-            for (size_t i = 0; i < length; ++i) {
-              py::bytes lbn = l_lbn[i];
-              vec[i] = ipclPythonUtils::pyByte2BN(lbn);
-            }
-            py::tuple t_pubkey = t[2];
-            ipcl::PublicKey pubkey = ipclPythonUtils::setIpclPubKey(t_pubkey);
-            return ipcl::CipherText(pubkey, vec);
-          }));
+      .def("getSize", &ipcl::CipherText::getSize, "Get size of container")
+      .def("__getstate__",
+           [](const ipcl::CipherText& self) {
+             std::vector<BigNumber> vec = self.getTexts();
+             size_t length = self.getSize();
+             nb::list l_bn;
+             for (auto it : vec) l_bn.append(ipclPythonUtils::BN2bytes(it));
+             std::shared_ptr<ipcl::PublicKey> _pk = self.getPubKey();
+             nb::tuple t_pubkey = ipclPythonUtils::getTupleIpclPubKey(*_pk);
+             return nb::make_tuple(length, l_bn, t_pubkey);
+           })
+      .def("__setstate__", [](ipcl::CipherText& self, const nb::tuple& t) {
+        size_t length = static_cast<size_t>(nb::cast<int>(t[0]));
+        std::vector<BigNumber> vec(length);
+        nb::list l_lbn = t[1];
+        for (size_t i = 0; i < length; ++i) {
+          nb::bytes lbn = l_lbn[i];
+          vec[i] = ipclPythonUtils::pyByte2BN(lbn);
+        }
+        nb::tuple t_pubkey = t[2];
+        ipcl::PublicKey pubkey = ipclPythonUtils::setIpclPubKey(t_pubkey);
+        new (&self) ipcl::CipherText(pubkey, vec);
+      });
 }
 
-void def_BigNumber(py::module& m) {
-  py::class_<BigNumber, std::shared_ptr<BigNumber>>(m, "ipclBigNumber")
-      .def(py::init<BigNumber&>(), "ipclBigNumber constructor")
-      .def(py::init(
-               [](Ipp32u data) { return std::make_shared<BigNumber>(data); }),
-           "ipclBigNumber constructor")
-      .def(py::init([](const py::list& data) {
-             size_t length = data.size();
-             std::vector<Ipp32u> pData = py::cast<std::vector<Ipp32u>>(data);
-             return std::shared_ptr<BigNumber>(
-                 new BigNumber(pData.data(), pData.size()));
-           }),
-           "ipclBigNumber constructor with list of integers - little endian "
-           "format")
-      .def(py::init([](const py::array_t<Ipp32u>& data) {
-             py::buffer_info buffer_info = data.request();
-
-             Ipp32u* pData = static_cast<Ipp32u*>(buffer_info.ptr);
-             std::vector<ssize_t> shape = buffer_info.shape;
-             return std::shared_ptr<BigNumber>(new BigNumber(pData, shape[0]));
-           }),
-           "ipclBigNumber constructor with array of integers - little endian "
-           "format")
-      .def(py::init([](const py::bytes& data) {
-        return std::shared_ptr<BigNumber>(
-            new BigNumber(ipclPythonUtils::pyByte2BN(data)));
-      }))
+void def_BigNumber(nb::module_& m) {
+  nb::class_<BigNumber>(m, "ipclBigNumber")
+      .def(nb::init<BigNumber&>(), "ipclBigNumber constructor")
+      .def(
+          "__init__",
+          [](BigNumber* t, Ipp32u data) { new (t) BigNumber(data); },
+          "ipclBigNumber constructor")
+      .def(
+          "__init__",
+          [](BigNumber* t, const nb::list& data) {
+            size_t length = data.size();
+            std::vector<Ipp32u> pData = nb::cast<std::vector<Ipp32u>>(data);
+            new (t) BigNumber(pData.data(), pData.size());
+          },
+          "ipclBigNumber constructor with list of integers - little endian "
+          "format")
+      .def(
+          "__init__",
+          [](BigNumber* t, const nb::ndarray<Ipp32u>& data) {
+            ssize_t length = data.shape(0);
+            Ipp32u* pData = const_cast<Ipp32u*>(data.data());
+            new (t) BigNumber(pData, length);
+          },
+          "ipclBigNumber constructor with array of integers - little endian "
+          "format")
+      .def("__init__",
+           [](BigNumber* t, const nb::bytes& data) {
+             new (t) BigNumber(ipclPythonUtils::pyByte2BN(data));
+           })
       .def("__repr__",
            [](BigNumber const& self) {
              std::stringstream ss_hash;
@@ -446,28 +444,27 @@ void def_BigNumber(py::module& m) {
             Ipp32u* bnData = nullptr;
             ippsRef_BN(nullptr, &bnBitLen, &bnData, self);
             int length = BITSIZE_WORD(bnBitLen);
-            py::list l_dt;
+            nb::list l_dt;
             for (int i = 0; i < length; i++) l_dt.append(bnData[i]);
-            return py::make_tuple(length, l_dt);
+            return nb::make_tuple(length, l_dt);
           },
           "return ipclBigNumber in size and list of 32bit unsigned integers")
       .def(
           "to_bytes",
           [](BigNumber const& self) { return ipclPythonUtils::BN2bytes(self); })
-      .def_property_readonly_static(
-          "Zero", [](const py::object&) { return BigNumber::Zero(); })
-      .def_property_readonly_static(
-          "One", [](const py::object&) { return BigNumber::One(); })
-      .def_property_readonly_static(
-          "Two", [](const py::object&) { return BigNumber::Two(); })
-      .def(py::pickle(
-          [](const BigNumber& self) {  // __getstate__
-            auto btl = ipclPythonUtils::BN2bytes(self);
-            return py::make_tuple(btl);
-          },
-          [](py::tuple t) {  // __setstate__
-            py::bytes l_dt = t[0];
-            return std::shared_ptr<BigNumber>(
-                new BigNumber(ipclPythonUtils::pyByte2BN(l_dt)));
-          }));
+      .def_prop_ro_static("Zero",
+                          [](const nb::object&) { return BigNumber::Zero(); })
+      .def_prop_ro_static("One",
+                          [](const nb::object&) { return BigNumber::One(); })
+      .def_prop_ro_static("Two",
+                          [](const nb::object&) { return BigNumber::Two(); })
+      .def("__getstate__",
+           [](const BigNumber& self) {
+             auto btl = ipclPythonUtils::BN2bytes(self);
+             return nb::make_tuple(btl);
+           })
+      .def("__setstate__", [](BigNumber& self, const nb::tuple t) {
+        nb::bytes l_dt = t[0];
+        new (&self) BigNumber(ipclPythonUtils::pyByte2BN(l_dt));
+      });
 }

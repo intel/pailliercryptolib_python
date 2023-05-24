@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.15.1)
 
 project(IPCL_PYTHON VERSION 2.0.0 LANGUAGES C CXX)
 
+find_package(Python 3.10 COMPONENTS Interpreter Development.Module REQUIRED)
+
 if(CMAKE_BUILD_TYPE)
   set(RELEASE_TYPES
       Debug
@@ -83,15 +85,15 @@ set(IPCL_BINDINGS_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})
 message(STATUS "IPCL_BINDINGS_SRCS_DIR:           ${IPCL_BINDINGS_SRC_DIR}")
 
 include(lib/ipcl.cmake)
-include(lib/pybind11.cmake)
+include(lib/nanobind.cmake)
 
-FetchContent_GetProperties(pybind11)
+FetchContent_GetProperties(nanobind)
 
 set(IPCL_BINDINGS_SRCS ${IPCL_BINDINGS_SRC_DIR}/ipcl_bindings.cpp
 ${IPCL_BINDINGS_SRC_DIR}/baseconverter.cpp
 ${IPCL_BINDINGS_SRC_DIR}/ipcl_bindings_classes.cpp)
 
-pybind11_add_module(ipcl_bindings ${IPCL_BINDINGS_SRCS})
+nanobind_add_module(ipcl_bindings ${IPCL_BINDINGS_SRCS})
 
 target_include_directories(ipcl_bindings PUBLIC ${PYTHON_INCLUDE_DIRS} ${IPCL_BINDINGS_INC_DIR} ${IPCL_BINDINGS_SRC_DIR})
 target_link_libraries(ipcl_bindings PUBLIC IPCL::ipcl)
