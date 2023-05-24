@@ -108,7 +108,7 @@ class FixedPointNumber(object):
             # Negative
             mantissa = self.encoding - self.n
         else:
-            raise OverflowError(f'Overflow detected in decode number, encoding: {self.encoding}，'
+            raise OverflowError(f'Overflow detected in decode number, encoding: {self.encoding}, '
                                 f'{self.exponent}'
                                 f' {self.n}')
 
