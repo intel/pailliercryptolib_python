@@ -53,6 +53,10 @@ jobs:
           echo "Testing from branch:"
           echo $GITHUB_REF
           pwd
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Install IPCL-Python extension
         run: python3 setup.py install --user
       - name: Run the unit test
