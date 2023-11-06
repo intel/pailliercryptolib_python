@@ -371,12 +371,8 @@ class PaillierEncryptedNumber(object):
                 1,
             )
 
-    def __setitem__(self, *key):
-        print("__setitem__: Not supported")
-
     def __iter__(self) -> "PaillierEncryptedNumber":
-        for i in range(len(self)):
-            yield self.__getitem__(i)
+        return (self[i] for i in range(len(self)))
 
     def __add__(
         self,
@@ -415,8 +411,8 @@ class PaillierEncryptedNumber(object):
         other: Union["PaillierEncryptedNumber", np.ndarray, list, int, float],
     ) -> "PaillierEncryptedNumber":
         if isinstance(other, PaillierEncryptedNumber):
-            return other.__sub__(self)
-        return self.__mul__(-1.0).__raw_add(other)
+            return other - self
+        return (self * (-1.0)).__raw_add(other)
 
     def __rmul__(
         self, other: Union[np.ndarray, list, int, float]
@@ -838,7 +834,7 @@ class PaillierEncryptedNumber(object):
     def matmul(
         self, other: Union[np.ndarray, list]
     ) -> "PaillierEncryptedNumber":
-        if self.__len__() % len(other) != 0:
+        if len(self) % len(other) != 0:
             raise ValueError(
                 "PaillierEncryptedNumber.matmul: matrix multiply size mismatch"
             )
@@ -848,7 +844,7 @@ class PaillierEncryptedNumber(object):
             # self.shape: (m x n), other.shape: (n x k), k could be none
             n = other.shape[0]
             k = other.shape[1] if other.ndim == 2 else 1
-            m = self.__len__() // n
+            m = len(self) // n
 
             res_ct, res_expo = [], []
             this_ct, this_pt = [], []
@@ -955,12 +951,12 @@ class PaillierEncryptedNumber(object):
             # other.shape: (m x n), self.shape: (n x k)
             m = other.shape[0] if other.ndim == 2 else 1
             n = other.shape[1] if other.ndim == 2 else other.shape[0]
-            if self.__len__() % n != 0:
+            if len(self) % n != 0:
                 raise ValueError(
                     "PaillierEncryptedNumber.rmatmul_f: matrix multiply size"
                     " mismatch"
                 )
-            k = self.__len__() // n
+            k = len(self) // n
 
             res_ct, res_expo = [], []
             this_ct, this_pt = [], []
