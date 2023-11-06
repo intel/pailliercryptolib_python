@@ -65,6 +65,42 @@ class TestPaillierEncryptedNumber(unittest.TestCase):
 
             self.assertAlmostEqual(de_en_x, x)
 
+    def test_matmul(self):
+        np.set_printoptions(suppress=True)
+        for _ in range(10):
+            m = np.random.randint(1, 9)
+            n = np.random.randint(1, 9)
+            k = np.random.randint(1, 9)
+            x_li = np.random.rand(m, n)
+            y_li = np.random.rand(n, k)
+
+            res = x_li @ y_li
+
+            en_x_li = self.public_key.encrypt(x_li.flatten())
+            en_res = en_x_li.matmul(y_li)
+            de_en_res = self.private_key.decrypt(en_res)
+            de_en_res = np.array(de_en_res).reshape([m, k])
+
+            np.allclose(de_en_res, res)
+
+    def test_rmatmul_f(self):
+        np.set_printoptions(suppress=True)
+        for _ in range(10):
+            m = np.random.randint(1, 9)
+            n = np.random.randint(1, 9)
+            k = np.random.randint(1, 9)
+            x_li = np.random.rand(m, n)
+            y_li = np.random.rand(n, k)
+
+            res = x_li @ y_li
+
+            en_y_li = self.public_key.encrypt(y_li.flatten())
+            en_res = en_y_li.rmatmul_f(x_li)
+            de_en_res = self.private_key.decrypt(en_res)
+            de_en_res = np.array(de_en_res).reshape([m, k])
+
+            np.allclose(de_en_res, res)
+
 
 if __name__ == "__main__":
     # unittest.main()
