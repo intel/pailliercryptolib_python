@@ -454,21 +454,15 @@ class PaillierEncryptedNumber:
                 for ct_expo, encode in zip(self.exponent(), encodes)
             ]
 
-            this_pt = []
-            this_ct = []
-            for ct, encode in zip(l_bn, encodes):
-                pt = encode.encoding
-
+            pts = [ encode.encoding for encode in encodes ]
+            for pt in pts:
                 if not 0 <= pt < self.public_key.n:
                     raise ValueError(f"Scalar out of bounds: {pt}")
 
-                if pt >= self.public_key.n - self.public_key.max_int:
-                    # invert corresponding ciphertext
-                    this_pt.append(BNUtils.int2BN(self.public_key.n - pt))
-                    this_ct.append(self._invert_ct(ct))
-                else:
-                    this_pt.append(BNUtils.int2BN(pt))
-                    this_ct.append(ct)
+            cond = self.public_key.n - self.public_key.max_int
+            # invert corresponding ciphertext if less than above condition
+            this_pt = [ BNUtils.int2BN(pt if pt < cond else self.public_key.n - pt) for ct, pt in zip(l_bn, pts) ]
+            this_ct = [ ct if pt < cond else self._invert_ct(ct) for ct, pt in zip(l_bn, pts) ]
 
             ct_ipclCipherText = ipclCipherText(self.public_key.pubkey, this_ct)
             pt_ipclPlainText = ipclPlainText(this_pt)
