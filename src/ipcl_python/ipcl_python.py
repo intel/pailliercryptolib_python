@@ -371,13 +371,7 @@ class PaillierEncryptedNumber:
         self,
         other: Union["PaillierEncryptedNumber", np.ndarray, list, int, float],
     ) -> "PaillierEncryptedNumber":
-        if (
-            self.__length == 1
-            and isinstance(other, PaillierEncryptedNumber)
-            and len(other) > 1
-        ):
-            return other.__raw_add(self)
-        return self.__raw_add(other)
+        return self + other
 
     def __sub__(
         self,
