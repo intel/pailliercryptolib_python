@@ -626,24 +626,6 @@ class PaillierEncryptedNumber:
                     y_idx_to_multiply
                 ] = y_factored_CipherText_tmp.getTexts()
 
-            return (
-                (
-                    x_ct
-                    if x_factored_CipherText is None
-                    else ipclCipherText(
-                        self.public_key.pubkey, x_factored_CipherText.tolist()
-                    )
-                ),
-                (
-                    y_ct
-                    if y_factored_CipherText is None
-                    else ipclCipherText(
-                        self.public_key.pubkey, y_factored_CipherText.tolist()
-                    )
-                ),
-                ret_exponent,
-            )
-
         else:
             y_to_multiply = []
 
@@ -696,23 +678,23 @@ class PaillierEncryptedNumber:
                     y_idx_to_multiply
                 ] = y_factored_CipherText_tmp.getTexts()
 
-            return (
-                (
-                    x_ct
-                    if x_factored_CipherText is None
-                    else ipclCipherText(
-                        self.public_key.pubkey, x_factored_CipherText.tolist()
-                    )
-                ),
-                (
-                    y_ct
-                    if y_factored_CipherText is None
-                    else ipclCipherText(
-                        self.public_key.pubkey, y_factored_CipherText.tolist()
-                    )
-                ),
-                ret_exponent,
-            )
+        return (
+            (
+                x_ct
+                if x_factored_CipherText is None
+                else ipclCipherText(
+                    self.public_key.pubkey, x_factored_CipherText.tolist()
+                )
+            ),
+            (
+                y_ct
+                if y_factored_CipherText is None
+                else ipclCipherText(
+                    self.public_key.pubkey, y_factored_CipherText.tolist()
+                )
+            ),
+            ret_exponent,
+        )
 
     def length(self) -> int:
         return self.__length
