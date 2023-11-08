@@ -811,8 +811,8 @@ class PaillierEncryptedNumber:
             pt = encode.encoding
             pt_expo = encode.exponent
 
-            if pt < 0 or pt >= self.public_key.n:
-                raise ValueError("Scalar out of bounds: %i" % pt)
+            if not 0 <= pt < self.public_key.n:
+                raise ValueError(f"Scalar out of bounds: {pt}")
 
             if pt >= self.public_key.n - self.public_key.max_int:
                 # invert corresponding ciphertext
