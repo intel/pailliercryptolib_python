@@ -827,9 +827,6 @@ class PaillierEncryptedNumber:
                 res_ct.append(padded_ct[0])
                 res_expo.append(max(temp_expo))
 
-                this_ct, this_pt = [], []
-                temp_expo = []
-
         res_ct = ipclCipherText(self.public_key.pubkey, res_ct)
         return PaillierEncryptedNumber(self.public_key, res_ct, res_expo, m * k)
 
@@ -914,9 +911,6 @@ class PaillierEncryptedNumber:
 
                 res_ct.append(padded_ct[0])
                 res_expo.append(max(temp_expo))
-
-                this_ct, this_pt = [], []
-                temp_expo = []
 
         res_ct = ipclCipherText(self.public_key.pubkey, res_ct)
         return PaillierEncryptedNumber(self.public_key, res_ct, res_expo, m * k)
