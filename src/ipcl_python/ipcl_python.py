@@ -248,7 +248,7 @@ class PaillierEncryptedNumber:
         self.__ipclCipherText = ciphertext
         self.__length = length
 
-    def _invert_ct(self, ct):
+    def __invert_ct(self, ct):
         int_ct = BNUtils.BN2int(ct)
         return BNUtils.int2BN(int(gmpy2.invert(int_ct, self.public_key.nsquare)))
 
@@ -401,7 +401,7 @@ class PaillierEncryptedNumber:
                 )
             if pt >= self.public_key.n - self.public_key.max_int:
                 # invert all ciphertext
-                neg_ct = [self._invert_ct(ct) for ct in self.ciphertextBN()]
+                neg_ct = [self.__invert_ct(ct) for ct in self.ciphertextBN()]
                 res_expo = [expo + pt_exponent for expo in self.exponent()]
 
                 neg_ct_ipclCipherText = ipclCipherText(self.public_key.pubkey, neg_ct)
@@ -446,7 +446,7 @@ class PaillierEncryptedNumber:
                 for ct, pt in zip(l_bn, pts)
             ]
             this_ct = [
-                ct if pt < cond else self._invert_ct(ct) for ct, pt in zip(l_bn, pts)
+                ct if pt < cond else self.__invert_ct(ct) for ct, pt in zip(l_bn, pts)
             ]
 
             ct_ipclCipherText = ipclCipherText(self.public_key.pubkey, this_ct)
@@ -723,8 +723,8 @@ class PaillierEncryptedNumber:
 
         step = 1
         while step < max_step:
-            tmp = padded_ct.rotate(step)
-            padded_ct = padded_ct + tmp
+            rotated = padded_ct.rotate(step)
+            padded_ct = padded_ct + rotated
             step = step << 1
 
         res_ipclCipherText = ipclCipherText(self.public_key.pubkey, padded_ct[0])
@@ -806,7 +806,7 @@ class PaillierEncryptedNumber:
             if pt >= self.public_key.n - self.public_key.max_int:
                 # invert corresponding ciphertext
                 this_pt.append(BNUtils.int2BN(self.public_key.n - pt))
-                this_ct.append(self._invert_ct(_ct))
+                this_ct.append(self.__invert_ct(_ct))
             else:
                 this_pt.append(BNUtils.int2BN(pt))
                 this_ct.append(_ct)
@@ -833,15 +833,16 @@ class PaillierEncryptedNumber:
 
                 step = 1
                 while step < max_step:
-                    tmp = padded_ct.rotate(step)
-                    padded_ct = padded_ct + tmp
+                    rotated = padded_ct.rotate(step)
+                    padded_ct = padded_ct + rotated
                     step = step << 1
 
                 res_ct.append(padded_ct[0])
                 res_expo.append(max(temp_expo))
 
-                this_ct, this_pt = [], []
-                temp_expo = []
+                this_ct.clear()
+                this_pt.clear()
+                temp_expo.clear()
 
         res_ct = ipclCipherText(self.public_key.pubkey, res_ct)
         return PaillierEncryptedNumber(self.public_key, res_ct, res_expo, m * k)
