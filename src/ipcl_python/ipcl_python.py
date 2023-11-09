@@ -452,12 +452,9 @@ class PaillierEncryptedNumber:
             ct_ipclCipherText = ipclCipherText(self.public_key.pubkey, this_ct)
             pt_ipclPlainText = ipclPlainText(this_pt)
 
-
         res_ct = ct_ipclCipherText * pt_ipclPlainText
 
-        return PaillierEncryptedNumber(
-            self.public_key, res_ct, res_expo, self.__length
-        )
+        return PaillierEncryptedNumber(self.public_key, res_ct, res_expo, self.__length)
 
     def __raw_add(
         self,
@@ -709,25 +706,10 @@ class PaillierEncryptedNumber:
             self.__ipclCipherText, self.exponent(), max_exponent
         )
 
-        max_step = 2 ** ((len(self) - 1).bit_length())
-        padded_ct = None
-        if max_step > len(self):
-            zero_ct = self.public_key.encrypt(0, apply_obfuscator=False)
-            padded_list = (
-                ct_aligned_ipclCipherText.getTexts()
-                + zero_ct.ciphertextBN() * (max_step - len(self))
-            )
-            padded_ct = ipclCipherText(self.public_key.pubkey, padded_list)
-        else:
-            padded_ct = ct_aligned_ipclCipherText
-
-        step = 1
-        while step < max_step:
-            rotated = padded_ct.rotate(step)
-            padded_ct = padded_ct + rotated
-            step = step << 1
-
-        res_ipclCipherText = ipclCipherText(self.public_key.pubkey, padded_ct[0])
+        temp_ct = ct_aligned_ipclCipherText.getTexts()
+        res_ipclCipherText = ipclCipherText(
+            self.public_key.pubkey, self.__padded_ct(temp_ct, n)
+        )
 
         return PaillierEncryptedNumber(
             self.public_key,
@@ -781,6 +763,23 @@ class PaillierEncryptedNumber:
             return (r_iteration(i) for i in range(m * n * k))
         return (iteration(i) for i in range(m * n * k))
 
+    def __padded_ct(self, temp_ct, n: int):
+        max_step = 2 ** ((n - 1).bit_length())
+        if max_step > n:
+            zero_ct = self.public_key.encrypt(0, apply_obfuscator=False)
+            padded_list = temp_ct.getTexts() + zero_ct.ciphertextBN() * (max_step - n)
+            padded_ct = ipclCipherText(self.public_key.pubkey, padded_list)
+        else:
+            padded_ct = temp_ct
+
+        step = 1
+        while step < max_step:
+            rotated = padded_ct.rotate(step)
+            padded_ct = padded_ct + rotated
+            step = step << 1
+
+        return padded_ct[0]
+
     def __matmul(
         self, other: np.ndarray, m: int, n: int, k: int, rhs: bool = False
     ) -> "PaillierEncryptedNumber":
@@ -820,24 +819,7 @@ class PaillierEncryptedNumber:
                 temp_ct = ct_ipclCipherText * pt_ipclPlainText
                 temp_ct = self.increase_exponent_to(temp_ct, temp_expo, max(temp_expo))
 
-                max_step = 2 ** ((n - 1).bit_length())
-                padded_ct = None
-                if max_step > n:
-                    zero_ct = self.public_key.encrypt(0, apply_obfuscator=False)
-                    padded_list = temp_ct.getTexts() + zero_ct.ciphertextBN() * (
-                        max_step - n
-                    )
-                    padded_ct = ipclCipherText(self.public_key.pubkey, padded_list)
-                else:
-                    padded_ct = temp_ct
-
-                step = 1
-                while step < max_step:
-                    rotated = padded_ct.rotate(step)
-                    padded_ct = padded_ct + rotated
-                    step = step << 1
-
-                res_ct.append(padded_ct[0])
+                res_ct.append(self.__padded_ct(temp_ct, n))
                 res_expo.append(max(temp_expo))
 
                 this_ct.clear()
