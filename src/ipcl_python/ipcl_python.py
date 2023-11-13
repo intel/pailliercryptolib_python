@@ -421,7 +421,7 @@ class PaillierEncryptedNumber:
             if not 0 <= pt < self.public_key.n:
                 raise ValueError(
                     f"PaillierEncryptedNumber.__mul__: Scalar out of"
-                    f"bounds: {py}"
+                    f"bounds: {pt}"
                 )
             if pt >= self.public_key.n - self.public_key.max_int:
                 # invert all ciphertext
@@ -751,7 +751,7 @@ class PaillierEncryptedNumber:
 
         temp_ct = ct_aligned_ipclCipherText.getTexts()
         res_ipclCipherText = ipclCipherText(
-            self.public_key.pubkey, self.__padded_ct(temp_ct, n)
+            self.public_key.pubkey, self.__padded_ct(temp_ct, len(self))
         )
 
         return PaillierEncryptedNumber(
