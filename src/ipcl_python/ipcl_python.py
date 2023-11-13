@@ -10,15 +10,14 @@ from .bindings.ipcl_bindings import (
     ipclCipherText,
     ipclBigNumber,
 )
+
 import numpy as np
 import gmpy2
-from typing import Union, Optional, Tuple
+
+from typing import Callable, Union, Optional, Tuple
 
 
-class PaillierKeypair(object):
-    def __init__(self):
-        pass
-
+class PaillierKeypair:
     @staticmethod
     def generate_keypair(
         n_length: int = 1024, enable_DJN: bool = True
@@ -37,13 +36,11 @@ class PaillierKeypair(object):
                                                      private key
         """
 
-        keys = ipclKeypair.generate_keypair(n_length, enable_DJN)
-        pub = PaillierPublicKey(keys[0])
-        pri = PaillierPrivateKey(keys[1])
-        return pub, pri
+        pub, pri = ipclKeypair.generate_keypair(n_length, enable_DJN)
+        return PaillierPublicKey(pub), PaillierPrivateKey(pri)
 
 
-class PaillierPublicKey(object):
+class PaillierPublicKey:
     def __init__(
         self,
         key: Union[ipclPublicKey, "PaillierPublicKey", int],
@@ -89,13 +86,13 @@ class PaillierPublicKey(object):
         self.nsquare = self.n * self.n
 
     def __repr__(self):
-        return self.pubkey.__repr__()
+        return repr(self.pubkey)
 
     def __eq__(self, other):
         return self.n == other.n
 
     def __hash__(self):
-        return self.pubkey.__hash__()
+        return hash(self.pubkey)
 
     def apply_obfuscator(self, x: Union[int, ipclBigNumber]):
         # apply_obfuscator function is embedded in encrypt
@@ -110,7 +107,7 @@ class PaillierPublicKey(object):
 
     def encrypt(
         self,
-        value: Union[np.ndarray, list, int, float],
+        values: Union[np.ndarray, list, int, float],
         apply_obfuscator: bool = True,
     ) -> "PaillierEncryptedNumber":
         """
@@ -124,28 +121,33 @@ class PaillierPublicKey(object):
             A single PaillierEncryptedNumber (scalar value) or numpy.ndarray
             of PaillierEncryptedNumber (list/array of integer/floats)
         """
-        if np.isscalar(value):
-            value = [value]
+        if np.isscalar(values):
+            values = [values]
 
-        enc, expo = [], []
-        for val in value:
-            if not (isinstance(val, (int, float, np.integer, np.floating))):
-                raise ValueError(
-                    "PaillierPublicKey.encrypt: input value(s) should be"
-                    " integer or float"
-                )
-            encoding = FixedPointNumber.encode(val, self.n, self.max_int)
-            enc.append(BNUtils.int2BN(encoding.encoding))
-            expo.append(encoding.exponent)
+        if not all(
+            isinstance(value, (int, float, np.integer, np.floating))
+            for value in values
+        ):
+            raise ValueError(
+                "PaillierPublicKey.encrypt: input value(s) should be "
+                "integer or float"
+            )
 
-        plaintext = ipclPlainText(enc)
+        encodings = [
+            FixedPointNumber.encode(value, self.n, self.max_int)
+            for value in values
+        ]
+        encs = [BNUtils.int2BN(encoding.encoding) for encoding in encodings]
+        expos = [encoding.exponent for encoding in encodings]
+
+        plaintext = ipclPlainText(encs)
         ct = self.pubkey.encrypt(plaintext, apply_obfuscator)
         return PaillierEncryptedNumber(
-            self, ct, exponents=expo, length=len(value)
+            self, ct, exponents=expos, length=len(values)
         )
 
 
-class PaillierPrivateKey(object):
+class PaillierPrivateKey:
     def __init__(
         self,
         key: Union[ipclPrivateKey, ipclPublicKey, PaillierPublicKey],
@@ -163,14 +165,12 @@ class PaillierPrivateKey(object):
             self.prikey = key
             self.__n = BNUtils.BN2int(key.n)
             self.__max_int = self.__n // 3 - 1
-            # self.public_key = PaillierPublicKey(key.public_key)
         elif isinstance(key, ipclPublicKey) and p is not None and q is not None:
             self.prikey = ipclPrivateKey(
                 key, BNUtils.int2BN(p), BNUtils.int2BN(q)
             )
             self.__n = BNUtils.BN2int(key.n)
             self.__max_int = self.__n // 3 - 1
-            # self.public_key = PaillierPublicKey(key)
         elif (
             isinstance(key, PaillierPublicKey)
             and p is not None
@@ -199,10 +199,10 @@ class PaillierPrivateKey(object):
         )
 
     def __hash__(self):
-        return self.prikey.__hash__()
+        return hash(self.prikey)
 
     def __repr__(self):
-        return self.prikey.__repr__()
+        return repr(self.prikey)
 
     def raw_decrypt(self, ciphertext: "PaillierEncryptedNumber") -> int:
         if ciphertext.public_key.n != self.__n:
@@ -235,20 +235,17 @@ class PaillierPrivateKey(object):
         decrypted = self.prikey.decrypt(encrypted_number.ciphertext())
         l_pt, l_expo = decrypted.getTexts(), encrypted_number.exponent()
 
-        ret = []
-        for pt, expo in zip(l_pt, l_expo):
-            dec = FixedPointNumber(
-                BNUtils.BN2int(pt),
-                expo,
-                self.__n,
-                self.__max_int,
-            )
-            ret.append(dec.decode())
+        ret = [
+            FixedPointNumber(
+                BNUtils.BN2int(pt), expo, self.__n, self.__max_int
+            ).decode()
+            for pt, expo in zip(l_pt, l_expo)
+        ]
 
         return ret if len(encrypted_number) > 1 else ret[0]
 
 
-class PaillierEncryptedNumber(object):
+class PaillierEncryptedNumber:
     def __init__(
         self,
         public_key: PaillierPublicKey,
@@ -265,18 +262,21 @@ class PaillierEncryptedNumber(object):
             exponent: exponent of ciphertext
         """
 
-        # check public key match
-        if ciphertext.public_key == public_key.pubkey:
-            pass
-        else:
+        if ciphertext.public_key != public_key.pubkey:
             raise ValueError("PaillierEncryptedNumber: public key mismatch")
         self.__exponents = exponents
         self.public_key = public_key
         self.__ipclCipherText = ciphertext
         self.__length = length
 
+    def __invert_ct(self, ct):
+        int_ct = BNUtils.BN2int(ct)
+        return BNUtils.int2BN(
+            int(gmpy2.invert(int_ct, self.public_key.nsquare))
+        )
+
     def __repr__(self):
-        return self.__ipclCipherText.__repr__()
+        return repr(self.__ipclCipherText)
 
     def __getstate__(self) -> tuple:
         return (
@@ -316,7 +316,7 @@ class PaillierEncryptedNumber(object):
         if idx is None:
             return self.__ipclCipherText.getTexts()
 
-        if idx < 0 or idx >= self.__length:
+        if not 0 <= idx < self.__length:
             raise IndexError("ciphertext: idx out of range")
 
         return self.__ipclCipherText[idx]
@@ -334,7 +334,7 @@ class PaillierEncryptedNumber(object):
         if idx is None:
             return self.__exponents
 
-        if idx < 0 or idx >= self.__length:
+        if not 0 <= idx < self.__length:
             raise IndexError("exponent: idx out of range")
 
         return self.__exponents[idx]
@@ -346,30 +346,18 @@ class PaillierEncryptedNumber(object):
         )
 
     def __getitem__(self, key: Union[int, slice]) -> "PaillierEncryptedNumber":
-        if isinstance(key, slice):
-            if (
-                key.stop >= len(self)
-                or key.stop < 0
-                or key.start < 0
-                or key.start >= len(self)
-            ):
-                raise IndexError("__getitem__: key out of range")
-            ciphertextBN = [
-                self.__ipclCipherText[i] for i in range(*key.indices(len(self)))
-            ]
-            newCT = ipclCipherText(self.public_key.pubkey, ciphertextBN)
-            return PaillierEncryptedNumber(
-                self.public_key, newCT, self.__exponents[key], len(ciphertextBN)
-            )
-        else:
-            if key < 0 or key >= len(self):
-                raise IndexError("__getitem__: key out of range")
-            return PaillierEncryptedNumber(
-                self.public_key,
-                self.__ipclCipherText.getCipherText(key),
-                [self.exponent(key)],
-                1,
-            )
+        if isinstance(key, int):
+            key = slice(key, key + 1)
+
+        if not 0 <= key.stop < len(self) or not 0 <= key.start < len(self):
+            raise IndexError("__getitem__: key out of range")
+
+        ciphertextBN = self.__ipclCipherText[key]
+        newCT = ipclCipherText(self.public_key.pubkey, ciphertextBN)
+
+        return PaillierEncryptedNumber(
+            self.public_key, newCT, self.__exponents[key], len(ciphertextBN)
+        )
 
     def __iter__(self) -> "PaillierEncryptedNumber":
         return (self[i] for i in range(len(self)))
@@ -390,13 +378,7 @@ class PaillierEncryptedNumber(object):
         self,
         other: Union["PaillierEncryptedNumber", np.ndarray, list, int, float],
     ) -> "PaillierEncryptedNumber":
-        if (
-            self.__length == 1
-            and isinstance(other, PaillierEncryptedNumber)
-            and len(other) > 1
-        ):
-            return other.__raw_add(self)
-        return self.__raw_add(other)
+        return self + other
 
     def __sub__(
         self,
@@ -417,44 +399,34 @@ class PaillierEncryptedNumber(object):
     def __rmul__(
         self, other: Union[np.ndarray, list, int, float]
     ) -> "PaillierEncryptedNumber":
-        return self.__mul__(other)
+        return self * other
 
     def __truediv__(
         self, other: Union[np.ndarray, list, int, float]
     ) -> "PaillierEncryptedNumber":
         if isinstance(other, list):
             other = np.array(other)
-        return self.__mul__(1.0 / other)
+        inv_other = 1.0 / other
+        return self * inv_other
 
     def __mul__(
         self, other: Union[np.ndarray, list, float, int]
     ) -> "PaillierEncryptedNumber":
-        if np.isscalar(other):  # if scalar - do broadcast
+        if np.isscalar(other):  # scalar - do broadcast
             encode = FixedPointNumber.encode(
                 other, self.public_key.n, self.public_key.max_int
             )
             pt = encode.encoding
             pt_exponent = encode.exponent
-            if pt < 0 or pt >= self.public_key.n:
+            if not 0 <= pt < self.public_key.n:
                 raise ValueError(
-                    "PaillierEncryptedNumber.__mul__: Scalar out of bounds: %i"
-                    % pt
+                    f"PaillierEncryptedNumber.__mul__: Scalar out of"
+                    f"bounds: {pt}"
                 )
             if pt >= self.public_key.n - self.public_key.max_int:
                 # invert all ciphertext
-                neg_ct = []
-                res_expo = []
-                for _ct, _expo in zip(self.ciphertextBN(), self.exponent()):
-                    neg_ct.append(
-                        BNUtils.int2BN(
-                            int(
-                                gmpy2.invert(
-                                    BNUtils.BN2int(_ct), self.public_key.nsquare
-                                )
-                            )
-                        )
-                    )
-                    res_expo.append(_expo + pt_exponent)
+                neg_ct = [self.__invert_ct(ct) for ct in self.ciphertextBN()]
+                res_expo = [expo + pt_exponent for expo in self.exponent()]
 
                 neg_ct_ipclCipherText = ipclCipherText(
                     self.public_key.pubkey, neg_ct
@@ -468,66 +440,59 @@ class PaillierEncryptedNumber(object):
                     self.public_key, res_ct, res_expo, self.__length
                 )
 
-            else:
-                res_expo = [_expo + pt_exponent for _expo in self.exponent()]
-                pt_ipclPlainText = ipclPlainText(BNUtils.int2BN(pt))
-                res_ct = self.ciphertext() * pt_ipclPlainText
-                return PaillierEncryptedNumber(
-                    self.public_key, res_ct, res_expo, self.__length
-                )
+            res_expo = [expo + pt_exponent for expo in self.exponent()]
+            ct_ipclCipherText = self.ciphertext()
+            pt_ipclPlainText = ipclPlainText(BNUtils.int2BN(pt))
 
         else:  # non scalar
             if len(other) != self.__length:
                 raise ValueError(
                     "PaillierEncryptedNumber.__mul__: Multiply size mismatch"
                 )
-            this_pt = []
-            res_expo = []
-            this_ct = []
             l_bn = self.ciphertextBN()
 
-            for _ct, _ct_expo, _pt in zip(l_bn, self.exponent(), other):
-                encode = FixedPointNumber.encode(
-                    _pt, self.public_key.n, self.public_key.max_int
+            encodes = [
+                FixedPointNumber.encode(
+                    pt, self.public_key.n, self.public_key.max_int
                 )
-                pt = encode.encoding
-                pt_exponent = encode.exponent
+                for pt in other
+            ]
+            res_expo = [
+                ct_expo + encode.exponent
+                for ct_expo, encode in zip(self.exponent(), encodes)
+            ]
 
-                res_expo.append(_ct_expo + pt_exponent)
-                if pt < 0 or pt >= self.public_key.n:
-                    raise ValueError("Scalar out of bounds: %i" % pt)
+            pts = [encode.encoding for encode in encodes]
+            for pt in pts:
+                if not 0 <= pt < self.public_key.n:
+                    raise ValueError(f"Scalar out of bounds: {pt}")
 
-                if pt >= self.public_key.n - self.public_key.max_int:
-                    # invert corresponding ciphertext
-                    this_pt.append(BNUtils.int2BN(self.public_key.n - pt))
-                    this_ct.append(
-                        BNUtils.int2BN(
-                            int(
-                                gmpy2.invert(
-                                    BNUtils.BN2int(_ct), self.public_key.nsquare
-                                )
-                            )
-                        )
-                    )
-                else:
-                    this_pt.append(BNUtils.int2BN(pt))
-                    this_ct.append(_ct)
+            cond = self.public_key.n - self.public_key.max_int
+            # invert corresponding ciphertext if less than above condition
+            this_pt = [
+                BNUtils.int2BN(pt if pt < cond else self.public_key.n - pt)
+                for ct, pt in zip(l_bn, pts)
+            ]
+            this_ct = [
+                ct if pt < cond else self.__invert_ct(ct)
+                for ct, pt in zip(l_bn, pts)
+            ]
 
             ct_ipclCipherText = ipclCipherText(self.public_key.pubkey, this_ct)
             pt_ipclPlainText = ipclPlainText(this_pt)
 
-            res_ct = ct_ipclCipherText * pt_ipclPlainText
+        res_ct = ct_ipclCipherText * pt_ipclPlainText
 
-            return PaillierEncryptedNumber(
-                self.public_key, res_ct, res_expo, self.__length
-            )
+        return PaillierEncryptedNumber(
+            self.public_key, res_ct, res_expo, self.__length
+        )
 
     def __raw_add(
         self,
         other: Union["PaillierEncryptedNumber", int, float, np.ndarray, list],
     ) -> "PaillierEncryptedNumber":
         # PlainText array or list
-        if isinstance(other, np.ndarray) or isinstance(other, list):
+        if isinstance(other, (np.ndarray, list)):
             if self.__length != len(other):
                 raise ValueError(
                     "PaillierEncryptedNumber.__raw_add: array(list) size"
@@ -535,9 +500,7 @@ class PaillierEncryptedNumber(object):
                 )
             other = self.public_key.encrypt(other, apply_obfuscator=False)
         # PlainText scalar - broadcasting
-        elif np.isscalar(other) and (
-            isinstance(other, int) or isinstance(other, float)
-        ):
+        elif np.isscalar(other) and isinstance(other, (int, float)):
             other = self.public_key.encrypt(other, apply_obfuscator=False)
         elif isinstance(other, PaillierEncryptedNumber):
             if self.public_key != other.public_key:
@@ -583,14 +546,11 @@ class PaillierEncryptedNumber(object):
         idx_to_multiply = np.asarray(expo_diff > 0).nonzero()[0]
 
         if idx_to_multiply.size > 0:
-            x_to_multiply, x_factor = [], []
-            for i in idx_to_multiply:
-                x_to_multiply.append(x_ct[i])
-                x_factor.append(
-                    BNUtils.int2BN(
-                        pow(FixedPointNumber.BASE, expo_diff[i].item())
-                    )
-                )
+            x_to_multiply = [x_ct[i] for i in idx_to_multiply]
+            x_factor = [
+                BNUtils.int2BN(pow(FixedPointNumber.BASE, expo_diff[i].item()))
+                for i in idx_to_multiply
+            ]
 
             x_to_multiply_ipclCipherText = ipclCipherText(
                 self.public_key.pubkey, x_to_multiply
@@ -789,27 +749,11 @@ class PaillierEncryptedNumber(object):
             self.__ipclCipherText, self.exponent(), max_exponent
         )
 
-        max_step = 2 ** ((self.__len__() - 1).bit_length())
-        padded_ct = None
-        if max_step > self.__len__():
-            zero_ct = self.public_key.encrypt(0, apply_obfuscator=False)
-            padded_list = (
-                ct_aligned_ipclCipherText.getTexts()
-                + zero_ct.ciphertextBN() * (max_step - self.__len__())
-            )
-            padded_ct = ipclCipherText(self.public_key.pubkey, padded_list)
-        else:
-            padded_ct = ct_aligned_ipclCipherText
-
-        step = 1
-        while step < max_step:
-            tmp = padded_ct.rotate(step)
-            padded_ct = padded_ct + tmp
-            step = step << 1
-
+        temp_ct = ct_aligned_ipclCipherText.getTexts()
         res_ipclCipherText = ipclCipherText(
-            self.public_key.pubkey, padded_ct[0]
+            self.public_key.pubkey, self.__padded_ct(temp_ct, len(self))
         )
+
         return PaillierEncryptedNumber(
             self.public_key,
             res_ipclCipherText,
@@ -818,18 +762,122 @@ class PaillierEncryptedNumber(object):
         )
 
     def mean(self) -> "PaillierEncryptedNumber":
-        _sum = self.sum()
-        return _sum / self.__len__()
+        return self.sum() / len(self)
 
     def dot(self, other: Union[np.ndarray, list]) -> "PaillierEncryptedNumber":
-        if len(other) != self.__len__():
+        if len(other) != len(self):
             raise ValueError(
                 "PaillierEncryptedNumber.dot: input size mismatch with"
                 " ciphertext"
             )
 
-        elemul = self.__mul__(other)
+        elemul = self * other
         return elemul.sum()
+
+    def __matmul_idx_pt(
+        self, other: np.ndarray, m: int, n: int, k: int, rhs: bool = False
+    ) -> Callable:
+        def r_iteration(i: int) -> Tuple[int, int, PaillierEncryptedNumber]:
+            idx_self = i % n * k + i // n % k
+            idx_other_x = i // (n * k)
+            idx_other_y = i % n
+
+            pt = (
+                other[idx_other_x][idx_other_y]
+                if other.ndim == 2
+                else other[idx_other_y]
+            )
+
+            return i, idx_self, pt
+
+        def iteration(i: int) -> Tuple[int, int, PaillierEncryptedNumber]:
+            idx_self = i // (n * k) * n + i % n
+            idx_other_x = i % n
+            idx_other_y = i // n % k
+
+            pt = (
+                other[idx_other_x][idx_other_y]
+                if other.ndim == 2
+                else other[idx_other_x]
+            )
+
+            return i, idx_self, pt
+
+        if rhs is True:
+            return (r_iteration(i) for i in range(m * n * k))
+        return (iteration(i) for i in range(m * n * k))
+
+    def __padded_ct(self, temp_ct, n: int):
+        max_step = 2 ** ((n - 1).bit_length())
+        if max_step > n:
+            zero_ct = self.public_key.encrypt(0, apply_obfuscator=False)
+            padded_list = temp_ct.getTexts() + zero_ct.ciphertextBN() * (
+                max_step - n
+            )
+            padded_ct = ipclCipherText(self.public_key.pubkey, padded_list)
+        else:
+            padded_ct = temp_ct
+
+        step = 1
+        while step < max_step:
+            rotated = padded_ct.rotate(step)
+            padded_ct = padded_ct + rotated
+            step = step << 1
+
+        return padded_ct[0]
+
+    def __matmul(
+        self, other: np.ndarray, m: int, n: int, k: int, rhs: bool = False
+    ) -> "PaillierEncryptedNumber":
+        res_ct, res_expo = [], []
+        this_ct, this_pt = [], []
+        temp_expo = []
+
+        l_bn = self.ciphertextBN()
+
+        for i, idx_self, _pt in self.__matmul_idx_pt(other, m, n, k, rhs):
+            _ct = l_bn[idx_self]
+            _ct_expo = self.exponent()[idx_self]
+
+            encode = FixedPointNumber.encode(
+                _pt, self.public_key.n, self.public_key.max_int
+            )
+            pt = encode.encoding
+            pt_expo = encode.exponent
+
+            if not 0 <= pt < self.public_key.n:
+                raise ValueError(f"Scalar out of bounds: {pt}")
+
+            if pt >= self.public_key.n - self.public_key.max_int:
+                # invert corresponding ciphertext
+                this_pt.append(BNUtils.int2BN(self.public_key.n - pt))
+                this_ct.append(self.__invert_ct(_ct))
+            else:
+                this_pt.append(BNUtils.int2BN(pt))
+                this_ct.append(_ct)
+
+            temp_expo.append(_ct_expo + pt_expo)
+
+            if (i + 1) % n == 0:
+                ct_ipclCipherText = ipclCipherText(
+                    self.public_key.pubkey, this_ct
+                )
+                pt_ipclPlainText = ipclPlainText(this_pt)
+
+                temp_ct = ct_ipclCipherText * pt_ipclPlainText
+                temp_ct = self.increase_exponent_to(
+                    temp_ct, temp_expo, max(temp_expo)
+                )
+
+                res_ct.append(self.__padded_ct(temp_ct, n))
+                res_expo.append(max(temp_expo))
+
+                this_ct.clear()
+                this_pt.clear()
+                temp_expo.clear()
+
+        res_ct = ipclCipherText(self.public_key.pubkey, res_ct)
+        return PaillierEncryptedNumber(self.public_key, res_ct, res_expo, m * k)
 
     def matmul(
         self, other: Union[np.ndarray, list]
@@ -840,235 +888,51 @@ class PaillierEncryptedNumber(object):
             )
 
         other = np.array(other)
-        if other.ndim == 1 or other.ndim == 2:
-            # self.shape: (m x n), other.shape: (n x k), k could be none
-            n = other.shape[0]
-            k = other.shape[1] if other.ndim == 2 else 1
-            m = len(self) // n
-
-            res_ct, res_expo = [], []
-            this_ct, this_pt = [], []
-            temp_expo = []
-
-            l_bn = self.ciphertextBN()
-
-            total_ops = m * n * k
-            for i in range(total_ops):
-                idx_self = i // (n * k) * n + i % n
-                idx_other_x = i % n
-                idx_other_y = i // n % k
-
-                _ct = l_bn[idx_self]
-                _ct_expo = self.exponent()[idx_self]
-                _pt = (
-                    other[idx_other_x][idx_other_y]
-                    if other.ndim == 2
-                    else other[idx_other_x]
-                )
-
-                encode = FixedPointNumber.encode(
-                    _pt, self.public_key.n, self.public_key.max_int
-                )
-                pt = encode.encoding
-                pt_expo = encode.exponent
-
-                if pt < 0 or pt >= self.public_key.n:
-                    raise ValueError("Scalar out of bounds: %i" % pt)
-
-                if pt >= self.public_key.n - self.public_key.max_int:
-                    # invert corresponding ciphertext
-                    this_pt.append(BNUtils.int2BN(self.public_key.n - pt))
-                    this_ct.append(
-                        BNUtils.int2BN(
-                            int(
-                                gmpy2.invert(
-                                    BNUtils.BN2int(_ct), self.public_key.nsquare
-                                )
-                            )
-                        )
-                    )
-                else:
-                    this_pt.append(BNUtils.int2BN(pt))
-                    this_ct.append(_ct)
-
-                temp_expo.append(_ct_expo + pt_expo)
-
-                if (i + 1) % n == 0:
-                    ct_ipclCipherText = ipclCipherText(
-                        self.public_key.pubkey, this_ct
-                    )
-                    pt_ipclPlainText = ipclPlainText(this_pt)
-
-                    temp_ct = ct_ipclCipherText * pt_ipclPlainText
-                    temp_ct = self.increase_exponent_to(
-                        temp_ct, temp_expo, max(temp_expo)
-                    )
-
-                    max_step = 2 ** ((n - 1).bit_length())
-                    padded_ct = None
-                    if max_step > n:
-                        zero_ct = self.public_key.encrypt(
-                            0, apply_obfuscator=False
-                        )
-                        padded_list = (
-                            temp_ct.getTexts()
-                            + zero_ct.ciphertextBN() * (max_step - n)
-                        )
-                        padded_ct = ipclCipherText(
-                            self.public_key.pubkey, padded_list
-                        )
-                    else:
-                        padded_ct = temp_ct
-
-                    step = 1
-                    while step < max_step:
-                        tmp = padded_ct.rotate(step)
-                        padded_ct = padded_ct + tmp
-                        step = step << 1
-
-                    res_ct.append(padded_ct[0])
-                    res_expo.append(max(temp_expo))
-
-                    this_ct, this_pt = [], []
-                    temp_expo = []
-
-            res_ct = ipclCipherText(self.public_key.pubkey, res_ct)
-            return PaillierEncryptedNumber(
-                self.public_key, res_ct, res_expo, m * k
-            )
-
-        else:
+        if other.ndim not in (1, 2):
             raise NotImplementedError(
-                f"PaillierEncryptedNumber.matmul: input ndim {other.ndim} not"
-                " supported"
+                f"PaillierEncryptedNumber.matmul: input ndim {other.ndim}"
+                f"not supported"
             )
+
+        # self.shape: (m x n), other.shape: (n x k), k could be none
+        n = other.shape[0]
+        k = other.shape[1] if other.ndim == 2 else 1
+        m = len(self) // n
+
+        return self.__matmul(other, m, n, k)
 
     def rmatmul_f(
         self, other: Union[np.ndarray, list]
     ) -> "PaillierEncryptedNumber":
         other = np.array(other)
-        if other.ndim == 1 or other.ndim == 2:
-            # other.shape: (m x n), self.shape: (n x k)
-            m = other.shape[0] if other.ndim == 2 else 1
-            n = other.shape[1] if other.ndim == 2 else other.shape[0]
-            if len(self) % n != 0:
-                raise ValueError(
-                    "PaillierEncryptedNumber.rmatmul_f: matrix multiply size"
-                    " mismatch"
-                )
-            k = len(self) // n
-
-            res_ct, res_expo = [], []
-            this_ct, this_pt = [], []
-            temp_expo = []
-
-            l_bn = self.ciphertextBN()
-
-            total_ops = m * n * k
-            for i in range(total_ops):
-                idx_self = i % n * k + i // n % k
-                idx_other_x = i // (n * k)
-                idx_other_y = i % n
-
-                _ct = l_bn[idx_self]
-                _ct_expo = self.exponent()[idx_self]
-                _pt = (
-                    other[idx_other_x][idx_other_y]
-                    if other.ndim == 2
-                    else other[idx_other_y]
-                )
-
-                encode = FixedPointNumber.encode(
-                    _pt, self.public_key.n, self.public_key.max_int
-                )
-                pt = encode.encoding
-                pt_expo = encode.exponent
-
-                if pt < 0 or pt >= self.public_key.n:
-                    raise ValueError("Scalar out of bounds: %i" % pt)
-
-                if pt >= self.public_key.n - self.public_key.max_int:
-                    # invert corresponding ciphertext
-                    this_pt.append(BNUtils.int2BN(self.public_key.n - pt))
-                    this_ct.append(
-                        BNUtils.int2BN(
-                            int(
-                                gmpy2.invert(
-                                    BNUtils.BN2int(_ct), self.public_key.nsquare
-                                )
-                            )
-                        )
-                    )
-                else:
-                    this_pt.append(BNUtils.int2BN(pt))
-                    this_ct.append(_ct)
-
-                temp_expo.append(_ct_expo + pt_expo)
-
-                if (i + 1) % n == 0:
-                    ct_ipclCipherText = ipclCipherText(
-                        self.public_key.pubkey, this_ct
-                    )
-                    pt_ipclPlainText = ipclPlainText(this_pt)
-
-                    temp_ct = ct_ipclCipherText * pt_ipclPlainText
-                    temp_ct = self.increase_exponent_to(
-                        temp_ct, temp_expo, max(temp_expo)
-                    )
-
-                    max_step = 2 ** ((n - 1).bit_length())
-                    padded_ct = None
-                    if max_step > n:
-                        zero_ct = self.public_key.encrypt(
-                            0, apply_obfuscator=False
-                        )
-                        padded_list = (
-                            temp_ct.getTexts()
-                            + zero_ct.ciphertextBN() * (max_step - n)
-                        )
-                        padded_ct = ipclCipherText(
-                            self.public_key.pubkey, padded_list
-                        )
-                    else:
-                        padded_ct = temp_ct
-
-                    step = 1
-                    while step < max_step:
-                        tmp = padded_ct.rotate(step)
-                        padded_ct = padded_ct + tmp
-                        step = step << 1
-
-                    res_ct.append(padded_ct[0])
-                    res_expo.append(max(temp_expo))
-
-                    this_ct, this_pt = [], []
-                    temp_expo = []
-
-            res_ct = ipclCipherText(self.public_key.pubkey, res_ct)
-            return PaillierEncryptedNumber(
-                self.public_key, res_ct, res_expo, m * k
-            )
-
-        else:
+        if other.ndim not in (1, 2):
             raise NotImplementedError(
-                "PaillierEncryptedNumber.rmatmul_f: input ndim"
-                f" {other.ndim} not supported"
+                f"PaillierEncryptedNumber.rmatmul_f: input ndim {other.ndim} "
+                f"not supported"
             )
+
+        # other.shape: (m x n), self.shape: (n x k)
+        m = other.shape[0] if other.ndim == 2 else 1
+        n = other.shape[1] if other.ndim == 2 else other.shape[0]
+        if len(self) % n != 0:
+            raise ValueError(
+                "PaillierEncryptedNumber.rmatmul_f: matrix multiply"
+                "size mismatch"
+            )
+        k = len(self) // n
+
+        return self.__matmul(other, m, n, k, rhs=True)
 
 
 class BNUtils:
     # slice first then send array
     @staticmethod
     def int2Bytes(val: int) -> bytes:
-        val_bytes = val.to_bytes(
-            (val.bit_length() + 7) // 8, byteorder="little"
-        )
-        return val_bytes
+        return val.to_bytes((val.bit_length() + 7) // 8, byteorder="little")
 
     @staticmethod
     def bytes2Int(val: bytes) -> int:
-        val_int = int.from_bytes(val, "little")
-        return val_int
+        return int.from_bytes(val, "little")
 
     @staticmethod
     def int2BN(val: int) -> ipclBigNumber:
@@ -1084,13 +948,14 @@ class BNUtils:
 
         if val == 0:
             return ipclBigNumber.Zero
-        elif val == 1:
+
+        if val == 1:
             return ipclBigNumber.One
-        elif val == 2:
+
+        if val == 2:
             return ipclBigNumber.Two
 
-        ret_bn = ipclBigNumber(BNUtils.int2Bytes(val))
-        return ret_bn
+        return ipclBigNumber(BNUtils.int2Bytes(val))
 
     @staticmethod
     def BN2int(val: ipclBigNumber) -> int:
@@ -1103,5 +968,4 @@ class BNUtils:
         Returns:
             Python integer representation of BigNumber
         """
-        ret = BNUtils.bytes2Int(val.to_bytes())
-        return ret
+        return BNUtils.bytes2Int(val.to_bytes())
