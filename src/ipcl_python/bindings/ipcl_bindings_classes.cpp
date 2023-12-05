@@ -214,6 +214,15 @@ void def_ipclPlainText(py::module& m) {
              return true;
            })
       .def("__getitem__", &ipcl::PlainText::getElement)
+      .def("__getitem__",
+           [](const ipcl::PlainText& self, py::slice slice) {
+             size_t start, stop, step, slicelength;
+             if (!slice.compute(self.getSize(), &start, &stop, &step,
+                                &slicelength))
+               throw py::error_already_set();
+             if (step != 1) throw std::runtime_error("Step size not supported");
+             return self.getChunk(start, slicelength);
+           })
       .def("__len__", &ipcl::PlainText::getSize)
       .def("rotate", &ipcl::PlainText::rotate, "Rotate ipclPlainText container")
       .def(
@@ -297,6 +306,15 @@ void def_ipclCipherText(py::module& m) {
                                 std::to_string(hashcode).substr(0, 10) + ">");
            })
       .def("__getitem__", &ipcl::CipherText::getElement)
+      .def("__getitem__",
+           [](const ipcl::CipherText& self, py::slice slice) {
+             size_t start, stop, step, slicelength;
+             if (!slice.compute(self.getSize(), &start, &stop, &step,
+                                &slicelength))
+               throw py::error_already_set();
+             if (step != 1) throw std::runtime_error("Step size not supported");
+             return self.getChunk(start, slicelength);
+           })
       .def("__add__",
            [](const ipcl::CipherText& self, const ipcl::CipherText& other) {
              return self + other;
