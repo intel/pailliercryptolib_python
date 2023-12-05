@@ -349,7 +349,7 @@ class PaillierEncryptedNumber:
         if isinstance(key, int):
             key = slice(key, key + 1)
 
-        if not 0 <= key.stop < len(self) or not 0 <= key.start < len(self):
+        if not 0 <= key.stop <= len(self) or not 0 <= key.start < len(self):
             raise IndexError("__getitem__: key out of range")
 
         ciphertextBN = self.__ipclCipherText[key]
@@ -879,18 +879,19 @@ class PaillierEncryptedNumber:
         res_ct = ipclCipherText(self.public_key.pubkey, res_ct)
         return PaillierEncryptedNumber(self.public_key, res_ct, res_expo, m * k)
 
-    def matmul(
+    def __matmul__(
         self, other: Union[np.ndarray, list]
     ) -> "PaillierEncryptedNumber":
         if len(self) % len(other) != 0:
             raise ValueError(
-                "PaillierEncryptedNumber.matmul: matrix multiply size mismatch"
+                "PaillierEncryptedNumber.__matmul__: "
+                "matrix multiply size mismatch"
             )
 
         other = np.array(other)
         if other.ndim not in (1, 2):
             raise NotImplementedError(
-                f"PaillierEncryptedNumber.matmul: input ndim {other.ndim}"
+                f"PaillierEncryptedNumber.__matmul__: input ndim {other.ndim}"
                 f"not supported"
             )
 
@@ -901,13 +902,13 @@ class PaillierEncryptedNumber:
 
         return self.__matmul(other, m, n, k)
 
-    def rmatmul_f(
+    def __rmatmul__(
         self, other: Union[np.ndarray, list]
     ) -> "PaillierEncryptedNumber":
         other = np.array(other)
         if other.ndim not in (1, 2):
             raise NotImplementedError(
-                f"PaillierEncryptedNumber.rmatmul_f: input ndim {other.ndim} "
+                f"PaillierEncryptedNumber.__rmatmul__: input ndim {other.ndim} "
                 f"not supported"
             )
 
@@ -916,12 +917,17 @@ class PaillierEncryptedNumber:
         n = other.shape[1] if other.ndim == 2 else other.shape[0]
         if len(self) % n != 0:
             raise ValueError(
-                "PaillierEncryptedNumber.rmatmul_f: matrix multiply"
+                "PaillierEncryptedNumber.__rmatmul__: matrix multiply"
                 "size mismatch"
             )
         k = len(self) // n
 
         return self.__matmul(other, m, n, k, rhs=True)
+
+    def __imatmul__(
+        self, other: Union[np.ndarray, list]
+    ) -> "PaillierEncryptedNumber":
+        return self @ other
 
 
 class BNUtils:
