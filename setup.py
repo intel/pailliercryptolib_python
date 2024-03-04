@@ -85,7 +85,7 @@ setup(
     install_requires=[
         "wheel",
         "numpy>=1.23.1, <=1.23.2",
-        "pycryptodomex==3.15.0",
+        "pycryptodomex==3.19.1",
         "gmpy2==2.1.5",
         "cachetools==3.0.0",
         "ruamel.yaml==0.16.10",
