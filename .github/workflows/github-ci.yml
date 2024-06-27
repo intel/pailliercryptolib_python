@@ -19,6 +19,9 @@ on:
 ##############
 # IceLake CI #
 ##############
+permissions:
+  contents: read
+
 jobs:
   format:
     name: Format check
